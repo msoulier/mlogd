@@ -7,6 +7,7 @@ import (
     "log"
     "io"
     "flag"
+    "syscall"
 )
 
 const (
@@ -14,8 +15,11 @@ const (
 )
 
 var timestamps = true
+var localtime = true
 var maxsize = 0
 var maxage = 0
+var logfileSize int64 = 0
+var logfileCreationTime = time.Now().UTC()
 
 func init() {
     const (
@@ -25,6 +29,21 @@ func init() {
     flag.BoolVar(&timestamps, "timestamps", false, "Prefix all output lines with timestamps")
     flag.IntVar(&maxsize, "maxsize", defaultMaxSize, "Maximum size of logfile in bytes before rotation")
     flag.IntVar(&maxage, "maxage", defaultMaxAge, "Maximum age of logfile in seconds before rotation")
+    flag.BoolVar(&localtime, "localtime", false, "Render timestamps in localtime instead of UTC")
+}
+
+func statfile(outfileName string) {
+    var stat syscall.Stat_t
+    err := syscall.Stat(outfileName, &stat)
+    if os.IsNotExist(err) {
+        return
+    } else if err != nil {
+        log.Fatal(err)
+    } else {
+        // The file exists. Update our globals.
+        logfileSize = stat.Size
+        logfileCreationTime = stat.Ctimespec
+    }
 }
 
 func main() {
@@ -39,6 +58,9 @@ func main() {
         if (outfileName == "-") {
             outfile = os.Stdout
         } else {
+            // If the logfile exists already, stat it and update the
+            // logfileSize and logfileAge globals.
+            statfile(outfileName)
             outfile, err = os.OpenFile(outfileName,
                                        os.O_WRONLY | os.O_CREATE,
                                        0600)
@@ -55,8 +77,13 @@ func main() {
 
     // Loop over stdin until EOF.
     for input.Scan() {
-        if (timestamps) {
-            now := time.Now().UTC()
+        if timestamps {
+            var now time.Time
+            if localtime {
+                now = time.Now()
+            } else {
+                now = time.Now().UTC()
+            }
             output.WriteString(now.Format(time.StampMicro) + ": ")
         }
         output.WriteString(input.Text() + "\n")
