@@ -7,7 +7,6 @@ import (
     "log"
     "io"
     "flag"
-    "syscall"
 )
 
 const (
@@ -32,20 +31,6 @@ func init() {
     flag.BoolVar(&localtime, "localtime", false, "Render timestamps in localtime instead of UTC")
 }
 
-func statfile(outfileName string) {
-    var stat syscall.Stat_t
-    err := syscall.Stat(outfileName, &stat)
-    if os.IsNotExist(err) {
-        return
-    } else if err != nil {
-        log.Fatal(err)
-    } else {
-        // The file exists. Update our globals.
-        logfileSize = stat.Size
-        logfileCreationTime = stat.Ctimespec
-    }
-}
-
 func main() {
     flag.Parse()
     // Input is always stdin.
@@ -60,7 +45,7 @@ func main() {
         } else {
             // If the logfile exists already, stat it and update the
             // logfileSize and logfileAge globals.
-            statfile(outfileName)
+            logfileSize, logfileCreationTime = statfile(outfileName)
             outfile, err = os.OpenFile(outfileName,
                                        os.O_WRONLY | os.O_CREATE,
                                        0600)
