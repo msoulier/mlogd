@@ -19,7 +19,7 @@ func statfile(outfileName string) (logfileSize int64, logfileCreationTime time.T
         // The file exists. Update our globals.
         logfileSize = stat.Size
         logfileCreationTime = time.Unix(stat.Ctimespec.Sec,
-                                        stat.Ctimespec.Nsec)
+                                        stat.Ctimespec.Nsec).UTC()
     }
     return logfileSize, logfileCreationTime
 }

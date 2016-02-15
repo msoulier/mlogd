@@ -19,12 +19,13 @@ var (
     timestamps = true
     localtime = true
     maxsize int64 = 0
-    maxage = 0
+    maxage int64 = 0
     logfileSize int64 = 0
     logfileCreationTime = time.Now().UTC()
     logger = logging.MustGetLogger("mlogd")
     debug = false
     isaFile = true
+    flush = false
 )
 
 func init() {
@@ -34,9 +35,10 @@ func init() {
     )
     flag.BoolVar(&timestamps, "timestamps", false, "Prefix all output lines with timestamps")
     flag.Int64Var(&maxsize, "maxsize", defaultMaxSize, "Maximum size of logfile in bytes before rotation")
-    flag.IntVar(&maxage, "maxage", defaultMaxAge, "Maximum age of logfile in seconds before rotation")
+    flag.Int64Var(&maxage, "maxage", defaultMaxAge, "Maximum age of logfile in seconds before rotation")
     flag.BoolVar(&localtime, "localtime", false, "Render timestamps in localtime instead of UTC")
     flag.BoolVar(&debug, "debug", false, "Debug logging in mlogd")
+    flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
     flag.Parse()
 
     if debug {
@@ -110,13 +112,19 @@ func main() {
             log.Fatalf("Write error: %s\n", err)
         }
         logfileSize += int64(outBytes)
-        output.Flush()
+        if flush {
+            output.Flush()
+        }
         if count % lineFrequencyCheck == 0 {
             logger.Debugf("logfileSize is now %d, rollover at %d",
                 logfileSize, maxsize)
             if logfileSize > maxsize && isaFile {
                 logger.Debug("Rolling over logfile")
             }
+            // And check current time for rollover.
+            now := time.Now().UTC()
+            duration := now.Sub(logfileCreationTime)
+            logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
         }
     }
     logger.Infof("EOF @ %d bytes", logfileSize)
