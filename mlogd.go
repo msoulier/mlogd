@@ -22,7 +22,7 @@ var (
     maxage int64 = 0
     logfileSize int64 = 0
     logfileCreationTime = time.Now().UTC()
-    logger = logging.MustGetLogger("mlogd")
+    logger *logging.Logger
     debug = false
     isaFile = true
     flush = false
@@ -41,26 +41,19 @@ func init() {
     flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
     flag.Parse()
 
-    if debug {
-        logging.SetLevel(logging.DEBUG, "mlogd")
-    } else {
-        logging.SetLevel(logging.INFO, "mlogd")
-    }
     format := logging.MustStringFormatter(
         `%{color}%{time:15:04:05.000} ▶ %{level} %{color:reset} %{message}`,
         )
-    logging.SetFormatter(format)
-    /* stderrBackend := logging.NewLogBackend(os.Stderr, "", 0)
+    stderrBackend := logging.NewLogBackend(os.Stderr, "", 0)
     stderrFormatter := logging.NewBackendFormatter(stderrBackend, format)
-    stderrBackendLevelled := logging.AddModuleLevel(stderrBackend)
+    stderrBackendLevelled := logging.AddModuleLevel(stderrFormatter)
+    logging.SetBackend(stderrBackendLevelled)
     if debug {
         stderrBackendLevelled.SetLevel(logging.DEBUG, "mlogd")
     } else {
         stderrBackendLevelled.SetLevel(logging.INFO, "mlogd")
     }
-    logging.SetBackend(stderrBackendLevelled, stderrFormatter)
-    log.Printf("debug is %s\n", debug)
-    log.Printf("level is %d\n", logging.GetLevel("")) */
+    logger = logging.MustGetLogger("mlogd")
 }
 
 func main() {
