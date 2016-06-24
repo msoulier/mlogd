@@ -185,4 +185,6 @@ func main() {
         }
     }
     logger.Infof("EOF @ %d bytes", logfileSize)
+    output.Flush()
+    outfile.Close()
 }
