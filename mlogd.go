@@ -66,18 +66,33 @@ func gettimesuffix(now time.Time) string {
     return rv
 }
 
+func rollover(linkName string, outfileName string, outfile *os.File) (string, *os.File, error) {
+    var err error
+    newOutfileName := strings.TrimSuffix(linkName, ".log") + "-" + gettimesuffix(time.Now()) + ".log"
+    logger.Debugf("rollover: new filename is %q", newOutfileName)
+    // Close and reopen outfile
+    outfile.Close()
+    outfile, err = os.OpenFile(newOutfileName,
+                               os.O_WRONLY | os.O_CREATE | os.O_APPEND,
+                               0600)
+    // Move the symlink
+    return newOutfileName, outfile, err
+}
+
 func main() {
     // Input is always stdin.
     input := bufio.NewScanner(os.Stdin)
     var outfile *os.File
     var err error
+    var linkName string
+    var outfileName string
 
     // Output is the file supplied on the command line.
     if len(os.Args[1:]) > 0 {
         timesuffix := gettimesuffix(time.Now())
         // FIXME: make .log extension configurable
-        linkName := os.Args[len(os.Args)-1]
-        outfileName := timesuffix + ".log"
+        linkName = os.Args[len(os.Args)-1]
+        outfileName = timesuffix + ".log"
         outfileName = strings.TrimSuffix(linkName, ".log") + "-" + timesuffix + ".log"
         logger.Debugf("linkName is %q, outfileName is %q", linkName, outfileName)
         if linkName == "-" {
@@ -142,16 +157,30 @@ func main() {
         if count % lineFrequencyCheck == 0 {
             logger.Debugf("logfileSize is now %d, rollover at %d",
                 logfileSize, maxsize)
+            now := time.Now().UTC()
             if logfileSize > maxsize && isaFile {
                 logger.Debug("Rolling over logfile")
+                outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+                output.Flush()
+                output = bufio.NewWriter(io.Writer(outfile))
+                if err != nil {
+                    log.Fatal(err)
+                }
+                logfileSize, logfileCreationTime = 0, now.UTC()
             }
             // And check current time for rollover.
-            now := time.Now().UTC()
             duration := now.Sub(logfileCreationTime)
             logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
             logger.Debugf("maxage is %d seconds", maxage)
             if int64(duration.Seconds()) >= maxage {
                 logger.Debug("Rolling over logfile")
+                outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+                output.Flush()
+                output = bufio.NewWriter(io.Writer(outfile))
+                if err != nil {
+                    log.Fatal(err)
+                }
+                logfileSize, logfileCreationTime = 0, now.UTC()
             }
         }
     }
