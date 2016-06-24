@@ -1,6 +1,7 @@
 package main
 
 import (
+    "strings"
     "bufio"
     "os"
     "time"
@@ -56,27 +57,57 @@ func init() {
     logger = logging.MustGetLogger("mlogd")
 }
 
+func gettimesuffix(now time.Time) string {
+    logger.Debugf("gettimesuffix: now is %s", now)
+    // http://fuckinggodateformat.com/
+    // %Y%m%e%H%M%S
+    // rfc 3339 - seriously??
+    rv := now.Format("200601_2150405")
+    return rv
+}
+
 func main() {
     // Input is always stdin.
     input := bufio.NewScanner(os.Stdin)
     var outfile *os.File
     var err error
+
     // Output is the file supplied on the command line.
-    if (len(os.Args[1:]) > 0) {
-        outfileName := os.Args[len(os.Args)-1]
-        if (outfileName == "-") {
+    if len(os.Args[1:]) > 0 {
+        timesuffix := gettimesuffix(time.Now())
+        // FIXME: make .log extension configurable
+        linkName := os.Args[len(os.Args)-1]
+        outfileName := timesuffix + ".log"
+        outfileName = strings.TrimSuffix(linkName, ".log") + "-" + timesuffix + ".log"
+        logger.Debugf("linkName is %q, outfileName is %q", linkName, outfileName)
+        if linkName == "-" {
             outfile = os.Stdout
             isaFile = false
             logger.Debug("outfile set to stdout")
         } else {
             // If the logfile exists already, stat it and update the
             // logfileSize and logfileAge globals.
-            logfileSize, logfileCreationTime = statfile(outfileName)
-            logger.Debugf("outfile exists already, size is %d bytes, creation time is %s", logfileSize, logfileCreationTime)
+            if linkContents, err := os.Readlink(linkName); err != nil {
+                logger.Debugf("linkName %q does not exist yet", linkName)
+                if err := os.Symlink(outfileName, linkName); err != nil {
+                    log.Fatal(err)
+                }
+            } else {
+                // The symlink exists. It is now our output file name.
+                logger.Debugf("linkName %q exists, reading and using it", linkName)
+                logger.Debugf("link points to %q", linkContents)
+                outfileName = linkContents
+            }
+            logfileSize, logfileCreationTime, err = statfile(outfileName)
+            if err != nil && os.IsNotExist(err) {
+                logger.Debugf("outfile %q does not yet exist - creating", outfileName)
+            } else {
+                logger.Debugf("outfile %q exists already, size is %d bytes, creation time is %s", outfileName, logfileSize, logfileCreationTime)
+            }
             outfile, err = os.OpenFile(outfileName,
                                        os.O_WRONLY | os.O_CREATE | os.O_APPEND,
                                        0600)
-            if (err != nil) {
+            if err != nil {
                 log.Fatal(err)
             }
         }
@@ -118,6 +149,10 @@ func main() {
             now := time.Now().UTC()
             duration := now.Sub(logfileCreationTime)
             logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
+            logger.Debugf("maxage is %d seconds", maxage)
+            if int64(duration.Seconds()) >= maxage {
+                logger.Debug("Rolling over logfile")
+            }
         }
     }
     logger.Infof("EOF @ %d bytes", logfileSize)

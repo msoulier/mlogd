@@ -7,9 +7,9 @@ import (
     "time"
 )
 
-func statfile(outfileName string) (logfileSize int64, logfileCreationTime time.Time) {
+func statfile(outfileName string) (logfileSize int64, logfileCreationTime time.Time, err error) {
     var stat syscall.Stat_t
-    err := syscall.Stat(outfileName, &stat)
+    err = syscall.Stat(outfileName, &stat)
     if os.IsNotExist(err) {
         logfileSize = 0
         logfileCreationTime = time.Now().UTC()
@@ -21,5 +21,5 @@ func statfile(outfileName string) (logfileSize int64, logfileCreationTime time.T
         logfileCreationTime = time.Unix(stat.Ctimespec.Sec,
                                         stat.Ctimespec.Nsec).UTC()
     }
-    return logfileSize, logfileCreationTime
+    return logfileSize, logfileCreationTime, err
 }
