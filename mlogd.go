@@ -76,6 +76,12 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
                                os.O_WRONLY | os.O_CREATE | os.O_APPEND,
                                0600)
     // Move the symlink
+    if err = os.Remove(linkName); err != nil {
+        logger.Fatal(err)
+    }
+    if err = os.Symlink(newOutfileName, linkName); err != nil {
+        logger.Fatal(err)
+    }
     return newOutfileName, outfile, err
 }
 
@@ -166,7 +172,8 @@ func main() {
                 if err != nil {
                     log.Fatal(err)
                 }
-                logfileSize, logfileCreationTime = 0, now.UTC()
+                logfileSize = 0
+                logfileCreationTime = now.UTC()
             }
             // And check current time for rollover.
             duration := now.Sub(logfileCreationTime)
@@ -180,7 +187,8 @@ func main() {
                 if err != nil {
                     log.Fatal(err)
                 }
-                logfileSize, logfileCreationTime = 0, now.UTC()
+                logfileSize = 0
+                logfileCreationTime = now.UTC()
             }
         }
     }
