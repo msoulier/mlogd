@@ -33,7 +33,7 @@ func select_stdin() {
     var timeval syscall.Timeval
     timeval.Sec = 60
     timeval.Usec = 0
-    n, selerr := syscall.Select(1, &r_fdset, nil, nil, &timeval)
+    _, selerr := syscall.Select(1, &r_fdset, nil, nil, &timeval)
     if selerr != nil {
         logger.Warning(selerr)
     }
