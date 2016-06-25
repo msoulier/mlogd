@@ -1,7 +1,6 @@
 package main
 
 import (
-    "syscall"
     "strings"
     "bufio"
     "os"
