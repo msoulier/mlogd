@@ -143,18 +143,7 @@ func main() {
     // loop forever - we expect to be killed with a SIGTERM or SIGINT
     for {
         logger.Debug("going into select on stdin")
-        var r_fdset syscall.FdSet
-        for i := 0; i < 16; i++ {
-            r_fdset.Bits[i] = 0
-        }
-        r_fdset.Bits[0] = 1
-        var timeval syscall.Timeval
-        timeval.Sec = 60
-        timeval.Usec = 0
-        selerr := syscall.Select(1, &r_fdset, nil, nil, &timeval)
-        if selerr != nil {
-            logger.Warning(selerr)
-        }
+        select_stdin()
 
         // Loop over stdin until EOF.
         var count int64 = 0

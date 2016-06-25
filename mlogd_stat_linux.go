@@ -23,3 +23,18 @@ func statfile(outfileName string) (logfileSize int64, logfileCreationTime time.T
     }
     return logfileSize, logfileCreationTime, err
 }
+
+func select_stdin() {
+    var r_fdset syscall.FdSet
+    for i := 0; i < 16; i++ {
+        r_fdset.Bits[i] = 0
+    }
+    r_fdset.Bits[0] = 1
+    var timeval syscall.Timeval
+    timeval.Sec = 60
+    timeval.Usec = 0
+    n, selerr := syscall.Select(1, &r_fdset, nil, nil, &timeval)
+    if selerr != nil {
+        logger.Warning(selerr)
+    }
+}
