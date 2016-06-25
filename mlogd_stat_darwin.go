@@ -30,10 +30,7 @@ func select_stdin() {
         r_fdset.Bits[i] = 0
     }
     r_fdset.Bits[0] = 1
-    var timeval syscall.Timeval
-    timeval.Sec = 60
-    timeval.Usec = 0
-    selerr := syscall.Select(1, &r_fdset, nil, nil, &timeval)
+    selerr := syscall.Select(1, &r_fdset, nil, nil, nil)
     if selerr != nil {
         logger.Warning(selerr)
     }
