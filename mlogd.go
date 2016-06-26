@@ -86,8 +86,6 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
 }
 
 func main() {
-    // Input is always stdin.
-    input := bufio.NewScanner(os.Stdin)
     var outfile *os.File
     var err error
     var linkName string
@@ -141,8 +139,11 @@ func main() {
 
     // loop forever - we expect to be killed with a SIGTERM or SIGINT
     for {
-        logger.Debug("going into select on stdin")
-        select_stdin()
+        //logger.Debug("going into select on stdin")
+        //select_stdin()
+        logger.Debug("top of the loop")
+        // Input is always stdin.
+        input := bufio.NewScanner(os.Stdin)
 
         // Loop over stdin until EOF.
         var count int64 = 0
