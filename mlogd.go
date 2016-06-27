@@ -160,6 +160,7 @@ selectloop:
     for {
         line, readerr := input.ReadString('\n')
         if readerr != nil {
+            logger.Debugf("%#v\n", readerr)
             if readerr == io.EOF {
                 logger.Debug("EOF")
                 break selectloop
@@ -185,6 +186,7 @@ selectloop:
         if flush {
             output.Flush()
         }
+        // FIXME: check at startup too in case we don't hit this frequency count
         if count % lineFrequencyCheck == 0 {
             logger.Debugf("logfileSize is now %d, rollover at %d",
                 logfileSize, maxsize)
