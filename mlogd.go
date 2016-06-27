@@ -139,7 +139,6 @@ func main() {
 
     //logger.Debug("going into select on stdin")
     //select_stdin()
-    logger.Debug("top of the loop")
     // Input is always stdin.
     //input := bufio.NewScanner(os.Stdin)
     input := bufio.NewReader(os.Stdin)
@@ -150,7 +149,12 @@ func main() {
     for {
         line, readerr := input.ReadString('\n')
         if readerr != nil {
-            break
+            if readerr == io.EOF {
+                logger.Debug("EOF")
+                break
+            } else {
+                logger.Fatal(readerr)
+            }
         }
         count++
         if timestamps {
