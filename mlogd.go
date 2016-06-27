@@ -47,8 +47,12 @@ func init() {
     flag.BoolVar(&version, "version", false, "Print version and quit")
     flag.Parse()
 
+    // The colour logger is problematic for capturing logs in text files.
+    //format := logging.MustStringFormatter(
+    //    `%{color}%{time:15:04:05.000} ▶ %{level} %{color:reset} %{message}`,
+    //    )
     format := logging.MustStringFormatter(
-        `%{color}%{time:15:04:05.000} ▶ %{level} %{color:reset} %{message}`,
+        `%{time:15:04:05.000} ▶ %{level} %{message}`,
         )
     stderrBackend := logging.NewLogBackend(os.Stderr, "", 0)
     stderrFormatter := logging.NewBackendFormatter(stderrBackend, format)
