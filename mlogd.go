@@ -1,6 +1,8 @@
 package main
 
 import (
+    "fmt"
+    "runtime"
     "strings"
     "bufio"
     "os"
@@ -14,6 +16,7 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     lineFrequencyCheck = 100
+    VERSION = "0.9"
 )
 
 var (
@@ -27,6 +30,7 @@ var (
     debug = false
     isaFile = true
     flush = false
+    version = false
 )
 
 func init() {
@@ -40,6 +44,7 @@ func init() {
     flag.BoolVar(&localtime, "localtime", false, "Render timestamps in localtime instead of UTC")
     flag.BoolVar(&debug, "debug", false, "Debug logging in mlogd")
     flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
+    flag.BoolVar(&version, "version", false, "Print version and quit")
     flag.Parse()
 
     format := logging.MustStringFormatter(
@@ -90,6 +95,11 @@ func main() {
     var err error
     var linkName string
     var outfileName string
+
+    if version {
+        fmt.Printf("mlogd version %s on %s\n", VERSION, runtime.GOOS)
+        os.Exit(0)
+    }
 
     // Output is the file supplied on the command line.
     if len(os.Args[1:]) > 0 {
