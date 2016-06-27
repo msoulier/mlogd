@@ -160,7 +160,7 @@ selectloop:
     for {
         line, readerr := input.ReadString('\n')
         if readerr != nil {
-            logger.Debugf("%#v\n", readerr)
+            logger.Debugf("read error: %#v\n", readerr)
             if readerr == io.EOF {
                 logger.Debug("EOF")
                 break selectloop
