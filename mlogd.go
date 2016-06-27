@@ -137,11 +137,14 @@ func main() {
     }
     output := bufio.NewWriter(io.Writer(outfile))
 
-    //logger.Debug("going into select on stdin")
-    //select_stdin()
     // Input is always stdin.
     //input := bufio.NewScanner(os.Stdin)
     input := bufio.NewReader(os.Stdin)
+
+    shutdown := false
+    for ! shutdown {
+    logger.Debug("going into select on stdin")
+    select_stdin()
 
     // Loop over stdin until EOF.
     var count int64 = 0
@@ -151,6 +154,7 @@ func main() {
         if readerr != nil {
             if readerr == io.EOF {
                 logger.Debug("EOF")
+                shutdown = true
                 break
             } else {
                 logger.Fatal(readerr)
@@ -206,6 +210,7 @@ func main() {
                 logfileCreationTime = now.UTC()
             }
         }
+    }
     }
     output.Flush()
     if isaFile {
