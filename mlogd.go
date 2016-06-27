@@ -165,7 +165,8 @@ selectloop:
                 logger.Debug("EOF")
                 break selectloop
             } else {
-                logger.Fatal(readerr)
+                // ignore for now
+                continue
             }
         }
         count++
