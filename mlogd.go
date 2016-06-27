@@ -1,6 +1,7 @@
 package main
 
 import (
+    "syscall"
     "fmt"
     "runtime"
     "strings"
@@ -165,8 +166,10 @@ selectloop:
                 if readerr == io.EOF {
                     logger.Debug("EOF")
                     break selectloop
-                } else {
+                } else if e, ok := err.(*os.PathError); ok && e.Err == syscall.EDEADLK {
                     break
+                } else {
+                    logger.Fatal(readerr)
                 }
             }
             count++
