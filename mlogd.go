@@ -141,11 +141,17 @@ func main() {
     //select_stdin()
     logger.Debug("top of the loop")
     // Input is always stdin.
-    input := bufio.NewScanner(os.Stdin)
+    //input := bufio.NewScanner(os.Stdin)
+    input := bufio.NewReader(os.Stdin)
 
     // Loop over stdin until EOF.
     var count int64 = 0
-    for input.Scan() {
+    //for input.Scan() {
+    for {
+        line, readerr := input.ReadString('\n')
+        if readerr != nil {
+            break
+        }
         count++
         if timestamps {
             var now time.Time
@@ -156,7 +162,8 @@ func main() {
             }
             output.WriteString(now.Format(time.StampMicro) + " ")
         }
-        outBytes, err := output.WriteString(input.Text() + "\n")
+        //outBytes, err := output.WriteString(input.Text() + "\n")
+        outBytes, err := output.WriteString(line)
         if err != nil {
             log.Fatalf("Write error: %s\n", err)
         }
@@ -196,7 +203,8 @@ func main() {
             }
         }
     }
-    logger.Infof("EOF @ %d bytes", logfileSize)
     output.Flush()
-    outfile.Close()
+    if isaFile {
+        outfile.Close()
+    }
 }
