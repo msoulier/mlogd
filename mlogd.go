@@ -152,73 +152,74 @@ func main() {
 
 selectloop:
     for {
-    logger.Debug("going into select on stdin")
-    select_stdin()
+        logger.Debug("going into select on stdin")
+        select_stdin()
 
-    // Loop over stdin until EOF.
-    var count int64 = 0
-    for {
-        line, readerr := input.ReadString('\n')
-        if readerr != nil {
-            logger.Debugf("read error: %#v\n", readerr)
-            if readerr == io.EOF {
-                logger.Debug("EOF")
-                break selectloop
-            } else {
-                logger.Fatal(readerr)
-            }
-        }
-        count++
-        if timestamps {
-            var now time.Time
-            if localtime {
-                now = time.Now()
-            } else {
-                now = time.Now().UTC()
-            }
-            output.WriteString(now.Format(time.StampMicro) + " ")
-        }
-        outBytes, err := output.WriteString(line)
-        if err != nil {
-            log.Fatalf("Write error: %s\n", err)
-        }
-        logfileSize += int64(outBytes)
-        if flush {
-            output.Flush()
-        }
-        // FIXME: check at startup too in case we don't hit this frequency count
-        if count % lineFrequencyCheck == 0 {
-            logger.Debugf("logfileSize is now %d, rollover at %d",
-                logfileSize, maxsize)
-            now := time.Now().UTC()
-            if logfileSize > maxsize && isaFile {
-                logger.Debug("Rolling over logfile")
-                outfileName, outfile, err = rollover(linkName, outfileName, outfile)
-                output.Flush()
-                output = bufio.NewWriter(io.Writer(outfile))
-                if err != nil {
-                    log.Fatal(err)
+        // Loop over stdin until EOF.
+        var count int64 = 0
+        for {
+            logger.Debugf("count is %d", count)
+            line, readerr := input.ReadString('\n')
+            if readerr != nil {
+                logger.Debugf("read error: %#v\n", readerr)
+                if readerr == io.EOF {
+                    logger.Debug("EOF")
+                    break selectloop
+                } else {
+                    logger.Fatal(readerr)
                 }
-                logfileSize = 0
-                logfileCreationTime = now.UTC()
             }
-            // And check current time for rollover.
-            duration := now.Sub(logfileCreationTime)
-            logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
-            logger.Debugf("maxage is %d seconds", maxage)
-            if int64(duration.Seconds()) >= maxage && isaFile {
-                logger.Debug("Rolling over logfile")
-                outfileName, outfile, err = rollover(linkName, outfileName, outfile)
-                output.Flush()
-                output = bufio.NewWriter(io.Writer(outfile))
-                if err != nil {
-                    log.Fatal(err)
+            count++
+            if timestamps {
+                var now time.Time
+                if localtime {
+                    now = time.Now()
+                } else {
+                    now = time.Now().UTC()
                 }
-                logfileSize = 0
-                logfileCreationTime = now.UTC()
+                output.WriteString(now.Format(time.StampMicro) + " ")
+            }
+            outBytes, err := output.WriteString(line)
+            if err != nil {
+                log.Fatalf("Write error: %s\n", err)
+            }
+            logfileSize += int64(outBytes)
+            if flush {
+                output.Flush()
+            }
+            // FIXME: check at startup too in case we don't hit this frequency count
+            if count % lineFrequencyCheck == 0 {
+                logger.Debugf("logfileSize is now %d, rollover at %d",
+                    logfileSize, maxsize)
+                now := time.Now().UTC()
+                if logfileSize > maxsize && isaFile {
+                    logger.Debug("Rolling over logfile")
+                    outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+                    output.Flush()
+                    output = bufio.NewWriter(io.Writer(outfile))
+                    if err != nil {
+                        log.Fatal(err)
+                    }
+                    logfileSize = 0
+                    logfileCreationTime = now.UTC()
+                }
+                // And check current time for rollover.
+                duration := now.Sub(logfileCreationTime)
+                logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
+                logger.Debugf("maxage is %d seconds", maxage)
+                if int64(duration.Seconds()) >= maxage && isaFile {
+                    logger.Debug("Rolling over logfile")
+                    outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+                    output.Flush()
+                    output = bufio.NewWriter(io.Writer(outfile))
+                    if err != nil {
+                        log.Fatal(err)
+                    }
+                    logfileSize = 0
+                    logfileCreationTime = now.UTC()
+                }
             }
         }
-    }
     }
     output.Flush()
     if isaFile {
