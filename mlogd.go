@@ -1,7 +1,6 @@
 package main
 
 import (
-    "syscall"
     "fmt"
     "runtime"
     "strings"
@@ -151,6 +150,10 @@ func main() {
     // Input is always stdin.
     input := bufio.NewReader(os.Stdin)
 
+    // A convenience for running checks at regular intervals.
+    // FIXME: use a goroutine
+    var ticker int64 = 0
+
 selectloop:
     for {
         logger.Debug("going into select on stdin")
@@ -162,17 +165,17 @@ selectloop:
             logger.Debugf("count is %d", count)
             line, readerr := input.ReadString('\n')
             if readerr != nil {
-                logger.Debugf("read error: %#v\n", readerr)
+                logger.Debugf("read error: %#v", readerr)
                 if readerr == io.EOF {
                     logger.Debug("EOF")
                     break selectloop
-                } else if e, ok := err.(*os.PathError); ok && e.Err == syscall.EDEADLK {
-                    break
                 } else {
-                    logger.Fatal(readerr)
+                    logger.Debugf("breaking read loop after %d lines", count+1)
+                    break
                 }
             }
             count++
+            ticker++
             if timestamps {
                 var now time.Time
                 if localtime {
@@ -191,7 +194,7 @@ selectloop:
                 output.Flush()
             }
             // FIXME: check at startup too in case we don't hit this frequency count
-            if count % lineFrequencyCheck == 0 {
+            if ticker % lineFrequencyCheck == 0 {
                 logger.Debugf("logfileSize is now %d, rollover at %d",
                     logfileSize, maxsize)
                 now := time.Now().UTC()
