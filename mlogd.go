@@ -138,24 +138,21 @@ func main() {
     output := bufio.NewWriter(io.Writer(outfile))
 
     // Input is always stdin.
-    //input := bufio.NewScanner(os.Stdin)
     input := bufio.NewReader(os.Stdin)
 
-    shutdown := false
-    for ! shutdown {
+selectloop:
+    for {
     logger.Debug("going into select on stdin")
     select_stdin()
 
     // Loop over stdin until EOF.
     var count int64 = 0
-    //for input.Scan() {
     for {
         line, readerr := input.ReadString('\n')
         if readerr != nil {
             if readerr == io.EOF {
                 logger.Debug("EOF")
-                shutdown = true
-                break
+                break selectloop
             } else {
                 logger.Fatal(readerr)
             }
@@ -170,7 +167,6 @@ func main() {
             }
             output.WriteString(now.Format(time.StampMicro) + " ")
         }
-        //outBytes, err := output.WriteString(input.Text() + "\n")
         outBytes, err := output.WriteString(line)
         if err != nil {
             log.Fatalf("Write error: %s\n", err)
