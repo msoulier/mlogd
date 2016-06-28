@@ -1,6 +1,9 @@
 package main
 
 import (
+    "sort"
+    "path"
+    "io/ioutil"
     "fmt"
     "runtime"
     "strings"
@@ -68,6 +71,12 @@ func init() {
     logger = logging.MustGetLogger("mlogd")
 }
 
+// For sorting FileInfo objects by Name
+type ByName []os.FileInfo
+func (a ByName) Len() int               { return len(a) }
+func (a ByName) Swap(i, j int)          { a[i], a[j] = a[j], a[i] }
+func (a ByName) Less(i, j int) bool     { return a[i].Name() < a[j].Name() }
+
 func gettimesuffix(now time.Time) string {
     logger.Debugf("gettimesuffix: now is %s", now)
     // http://fuckinggodateformat.com/
@@ -97,7 +106,41 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
 }
 
 func manage_rotated_files(linkName string, nfiles int) {
-    logger.Debugf("nfiles is %d", nfiles)
+    logger.Debugf("manage_rotated_files: nfiles is %d", nfiles)
+    dirname := path.Dir(linkName)
+    basename := path.Base(linkName)
+    logger.Debugf("dirname is %s, basename is %s", dirname, basename)
+    files, err := ioutil.ReadDir(dirname)
+    if err != nil {
+        logger.Fatal(err)
+    }
+    // An array of files to return
+    old_logfiles := make([]os.FileInfo, 0, 100)
+    for _, file := range files {
+        logger.Debugf("found file in log dir: %s", file.Name())
+        // We only want .log files.
+        if strings.HasSuffix(file.Name(), ".log") {
+            logger.Debug("    this is a logfile")
+            if file.Name() == basename {
+                logger.Debug("    don't count this one")
+            } else {
+                old_logfiles = append(old_logfiles, file)
+            }
+        }
+    }
+    logger.Debugf("old_logfiles is now %s, with %d elements", old_logfiles, len(old_logfiles))
+    if len(old_logfiles) > nfiles {
+        todelete := len(old_logfiles) - nfiles
+        logger.Debugf("need to delete old logfiles: %d", todelete)
+        sort.Reverse(ByName(old_logfiles))
+        for _, file := range old_logfiles[:todelete] {
+            todelete_path := dirname + "/" + file.Name()
+            logger.Debugf("deleting: %s", todelete_path)
+            if err := os.Remove(todelete_path); err != nil {
+                logger.Fatal(err)
+            }
+        }
+    }
 }
 
 func main() {
