@@ -19,7 +19,7 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     lineFrequencyCheck = 100
-    VERSION = "0.9"
+    VERSION = "0.91"
 )
 
 var (
@@ -86,25 +86,6 @@ func gettimesuffix(now time.Time) string {
     return rv
 }
 
-func rollover(linkName string, outfileName string, outfile *os.File) (string, *os.File, error) {
-    var err error
-    newOutfileName := strings.TrimSuffix(linkName, ".log") + "-" + gettimesuffix(time.Now()) + ".log"
-    logger.Debugf("rollover: new filename is %q", newOutfileName)
-    // Close and reopen outfile
-    outfile.Close()
-    outfile, err = os.OpenFile(newOutfileName,
-                               os.O_WRONLY | os.O_CREATE | os.O_APPEND,
-                               0600)
-    // Move the symlink
-    if err = os.Remove(linkName); err != nil {
-        logger.Fatal(err)
-    }
-    if err = os.Symlink(newOutfileName, linkName); err != nil {
-        logger.Fatal(err)
-    }
-    return newOutfileName, outfile, err
-}
-
 func manage_rotated_files(linkName string, nfiles int) {
     logger.Debugf("manage_rotated_files: nfiles is %d", nfiles)
     dirname := path.Dir(linkName)
@@ -141,6 +122,26 @@ func manage_rotated_files(linkName string, nfiles int) {
             }
         }
     }
+}
+
+func rollover(linkName string, outfileName string, outfile *os.File, nfiles int) (string, *os.File, error) {
+    var err error
+    newOutfileName := strings.TrimSuffix(linkName, ".log") + "-" + gettimesuffix(time.Now()) + ".log"
+    logger.Debugf("rollover: new filename is %q", newOutfileName)
+    // Close and reopen outfile
+    outfile.Close()
+    outfile, err = os.OpenFile(newOutfileName,
+                               os.O_WRONLY | os.O_CREATE | os.O_APPEND,
+                               0600)
+    // Move the symlink
+    if err = os.Remove(linkName); err != nil {
+        logger.Fatal(err)
+    }
+    if err = os.Symlink(newOutfileName, linkName); err != nil {
+        logger.Fatal(err)
+    }
+    manage_rotated_files(linkName, nfiles)
+    return newOutfileName, outfile, err
 }
 
 func main() {
@@ -254,7 +255,7 @@ selectloop:
                 now := time.Now().UTC()
                 if logfileSize > maxsize && isaFile {
                     logger.Debug("Rolling over logfile")
-                    outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+                    outfileName, outfile, err = rollover(linkName, outfileName, outfile, nfiles)
                     output.Flush()
                     output = bufio.NewWriter(io.Writer(outfile))
                     if err != nil {
@@ -269,7 +270,7 @@ selectloop:
                 logger.Debugf("maxage is %d seconds", maxage)
                 if int64(duration.Seconds()) >= maxage && isaFile {
                     logger.Debug("Rolling over logfile")
-                    outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+                    outfileName, outfile, err = rollover(linkName, outfileName, outfile, nfiles)
                     output.Flush()
                     output = bufio.NewWriter(io.Writer(outfile))
                     if err != nil {
