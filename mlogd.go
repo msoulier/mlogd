@@ -31,6 +31,7 @@ var (
     isaFile = true
     flush = false
     version = false
+    nfiles = 7
 )
 
 func init() {
@@ -45,6 +46,7 @@ func init() {
     flag.BoolVar(&debug, "debug", false, "Debug logging in mlogd")
     flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
     flag.BoolVar(&version, "version", false, "Print version and quit")
+    flag.IntVar(&nfiles, "nfiles", 7, "The number of log files to keep")
     flag.Parse()
 
     // The colour logger is problematic for capturing logs in text files.
@@ -94,6 +96,10 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
     return newOutfileName, outfile, err
 }
 
+func manage_rotated_files(linkName string, nfiles int) {
+    logger.Debugf("nfiles is %d", nfiles)
+}
+
 func main() {
     var outfile *os.File
     var err error
@@ -113,6 +119,7 @@ func main() {
         outfileName = timesuffix + ".log"
         outfileName = strings.TrimSuffix(linkName, ".log") + "-" + timesuffix + ".log"
         logger.Debugf("linkName is %q, outfileName is %q", linkName, outfileName)
+        manage_rotated_files(linkName, nfiles)
         if linkName == "-" {
             outfile = os.Stdout
             isaFile = false
