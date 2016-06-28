@@ -35,6 +35,7 @@ var (
     flush = false
     version = false
     nfiles = 7
+    post = ""
 )
 
 func init() {
@@ -50,6 +51,7 @@ func init() {
     flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
     flag.BoolVar(&version, "version", false, "Print version and quit")
     flag.IntVar(&nfiles, "nfiles", 7, "The number of log files to keep")
+    flag.StringVar(&post, "post", "", "A post-rotation shell command to run")
     flag.Parse()
 
     // The colour logger is problematic for capturing logs in text files.
@@ -86,7 +88,7 @@ func gettimesuffix(now time.Time) string {
     return rv
 }
 
-func manage_rotated_files(linkName string, nfiles int) {
+func manage_rotated_files(linkName string, nfiles int, post string) {
     logger.Debugf("manage_rotated_files: nfiles is %d", nfiles)
     dirname := path.Dir(linkName)
     basename := path.Base(linkName)
@@ -124,7 +126,7 @@ func manage_rotated_files(linkName string, nfiles int) {
     }
 }
 
-func rollover(linkName string, outfileName string, outfile *os.File, nfiles int) (string, *os.File, error) {
+func rollover(linkName string, outfileName string, outfile *os.File, nfiles int, post string) (string, *os.File, error) {
     var err error
     newOutfileName := strings.TrimSuffix(linkName, ".log") + "-" + gettimesuffix(time.Now()) + ".log"
     logger.Debugf("rollover: new filename is %q", newOutfileName)
@@ -140,7 +142,7 @@ func rollover(linkName string, outfileName string, outfile *os.File, nfiles int)
     if err = os.Symlink(newOutfileName, linkName); err != nil {
         logger.Fatal(err)
     }
-    manage_rotated_files(linkName, nfiles)
+    manage_rotated_files(linkName, nfiles, post)
     return newOutfileName, outfile, err
 }
 
@@ -156,14 +158,17 @@ func main() {
     }
 
     // Output is the file supplied on the command line.
-    if len(os.Args[1:]) > 0 {
+    if len(flag.Args()) > 0 {
         timesuffix := gettimesuffix(time.Now())
         // FIXME: make .log extension configurable
         linkName = os.Args[len(os.Args)-1]
         outfileName = timesuffix + ".log"
         outfileName = strings.TrimSuffix(linkName, ".log") + "-" + timesuffix + ".log"
         logger.Debugf("linkName is %q, outfileName is %q", linkName, outfileName)
-        manage_rotated_files(linkName, nfiles)
+        if post != "" {
+            logger.Debugf("post rotation command is '%s'", post)
+        }
+        manage_rotated_files(linkName, nfiles, post)
         if linkName == "-" {
             outfile = os.Stdout
             isaFile = false
@@ -255,7 +260,7 @@ selectloop:
                 now := time.Now().UTC()
                 if logfileSize > maxsize && isaFile {
                     logger.Debug("Rolling over logfile")
-                    outfileName, outfile, err = rollover(linkName, outfileName, outfile, nfiles)
+                    outfileName, outfile, err = rollover(linkName, outfileName, outfile, nfiles, post)
                     output.Flush()
                     output = bufio.NewWriter(io.Writer(outfile))
                     if err != nil {
@@ -270,7 +275,7 @@ selectloop:
                 logger.Debugf("maxage is %d seconds", maxage)
                 if int64(duration.Seconds()) >= maxage && isaFile {
                     logger.Debug("Rolling over logfile")
-                    outfileName, outfile, err = rollover(linkName, outfileName, outfile, nfiles)
+                    outfileName, outfile, err = rollover(linkName, outfileName, outfile, nfiles, post)
                     output.Flush()
                     output = bufio.NewWriter(io.Writer(outfile))
                     if err != nil {
