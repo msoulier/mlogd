@@ -20,7 +20,7 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     lineFrequencyCheck = 100
-    VERSION = "0.91"
+    VERSION = "1.00"
 )
 
 var (
