@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.14.4
+Version: 1.0
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -18,29 +18,28 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
-*
-- []
+* Wed Jul 20 2016 Michael P. Soulier <msoulier@digitaltorque.ca>
+- [1.0]
 - Initial rpm build.
 
 %prep
 %setup -q
 
 %build
+go build
 
 %install
 rm -rf $RPM_BUILD_ROOT
-(cd root   ; find . -depth -print | cpio -dump $RPM_BUILD_ROOT)
-
-rm -f %{name}-%{version}-%{release}-filelist
-/sbin/e-smith/genfilelist \
-    --file '/usr/sbin/tug-dump-dbs' 'attr(0700,root,root)' \
-    $RPM_BUILD_ROOT > %{name}-%{version}-%{release}-filelist
+mkdir -p $RPM_BUILD_ROOT/usr/sbin
+go mlogd $RPM_BUILD_ROOT/usr/sbin
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files -f %{name}-%{version}-%{release}-filelist
 %defattr(-,root,root)
+%attr(0700,root,root) /usr/sbin/mlogd
+%doc LICENSE README
 
 %pre
 
