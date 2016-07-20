@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.1
+Version: 1.2.1
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -20,6 +20,14 @@ rotation hook that allows compression to a .log.gz file.
 
 %changelog
 * Wed Jul 20 2016 Michael Soulier <michael_soulier@mitel.com>
+- [1.2.1-01]
+- Adding additional debug.
+
+* Wed Jul 20 2016 Michael Soulier <michael_soulier@mitel.com>
+- [1.2-01]
+- Fixing mlogd permissions.
+
+* Wed Jul 20 2016 Michael Soulier <michael_soulier@mitel.com>
 - [1.1-01]
 - Initial rpm build.
 
@@ -39,7 +47,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-%attr(0700,root,root) /usr/sbin/mlogd
+%attr(0755,root,root) /usr/sbin/mlogd
 %doc LICENSE README
 
 %pre
