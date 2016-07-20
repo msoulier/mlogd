@@ -1,1 +1,16 @@
-FIXME
+Build requirements:
+-------------------
+mkdir -p $HOME/work/go
+export GOPATH=$HOME/work/go
+
+go get github.com/op/go-logging
+
+A basic build can be then tested with "go build" in the mlogd source
+directory.
+
+Or, 
+
+go get github.com/msoulier/mlogd
+cd $GOPATH && go install mlogd
+
+and the executable will be in the $GOPATH/bin directory.

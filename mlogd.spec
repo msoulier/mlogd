@@ -31,7 +31,7 @@ go build
 %install
 rm -rf $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/sbin
-go mlogd $RPM_BUILD_ROOT/usr/sbin
+cp mlogd $RPM_BUILD_ROOT/usr/sbin
 
 %clean
 rm -rf $RPM_BUILD_ROOT
