@@ -26,7 +26,7 @@ rotation hook that allows compression to a .log.gz file.
 %setup -q
 
 %build
-go build
+go build -o mlogd
 
 %install
 rm -rf $RPM_BUILD_ROOT
