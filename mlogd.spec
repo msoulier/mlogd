@@ -11,6 +11,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildArch: x86_64
 AutoReqProv: no
 %define __os_install_post %{nil}
+%define debug_package %{nil}
 
 %description
 This is a multilog/svlogd replacement with behaviour that is more typical of
