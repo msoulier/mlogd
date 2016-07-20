@@ -37,7 +37,7 @@ cp mlogd $RPM_BUILD_ROOT/usr/sbin
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%files -f %{name}-%{version}-%{release}-filelist
+%files
 %defattr(-,root,root)
 %attr(0700,root,root) /usr/sbin/mlogd
 %doc LICENSE README
