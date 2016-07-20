@@ -20,7 +20,7 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     lineFrequencyCheck = 100
-    VERSION = "1.00"
+    VERSION = "1.2"
 )
 
 var (
@@ -74,6 +74,16 @@ func init() {
         stderrBackendLevelled.SetLevel(logging.INFO, "mlogd")
     }
     logger = logging.MustGetLogger("mlogd")
+
+    logger.Debugf("timestamps is %q", timestamps)
+    logger.Debugf("maxsize is %q", maxsize)
+    logger.Debugf("maxage is %q", maxage)
+    logger.Debugf("localtime is %q", localtime)
+    logger.Debugf("debug is %q", debug)
+    logger.Debugf("flush is %q", flush)
+    logger.Debugf("nfiles is %q", nfiles)
+    logger.Debugf("post is %q", post)
+    logger.Debugf("altext is %q", altext)
 }
 
 // For sorting FileInfo objects by Name
