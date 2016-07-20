@@ -9,8 +9,8 @@ Source0: %{name}-%{version}.tar.gz
 BuildRequires: golang
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 BuildArch: x86_64
-#AutoReqProv: no
-#%define __os_install_post %{nil}
+AutoReqProv: no
+%define __os_install_post %{nil}
 
 %description
 This is a multilog/svlogd replacement with behaviour that is more typical of
