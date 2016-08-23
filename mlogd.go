@@ -20,7 +20,7 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     lineFrequencyCheck = 100
-    VERSION = "1.2.1"
+    VERSION = "1.2.3"
 )
 
 var (
@@ -62,7 +62,7 @@ func init() {
     //    `%{color}%{time:15:04:05.000} ▶ %{level} %{color:reset} %{message}`,
     //    )
     format := logging.MustStringFormatter(
-        `%{time:15:04:05.000} ▶ %{level} %{message}`,
+        `%{time:15:04:05.000} %{level} %{message}`,
         )
     stderrBackend := logging.NewLogBackend(os.Stderr, "", 0)
     stderrFormatter := logging.NewBackendFormatter(stderrBackend, format)
@@ -75,6 +75,7 @@ func init() {
     }
     logger = logging.MustGetLogger("mlogd")
 
+    logger.Debugf("starting mlogd version %s on %s\n", VERSION, runtime.GOOS)
     logger.Debugf("timestamps is %q", timestamps)
     logger.Debugf("maxsize is %q", maxsize)
     logger.Debugf("maxage is %q", maxage)
@@ -101,6 +102,9 @@ func gettimesuffix(now time.Time) string {
     return rv
 }
 
+/*
+ * Run the post command on the file in a goroutine.
+ */
 func do_post(filePath string) {
     cmd := exec.Command(post, filePath)
     logger.Debugf("in do_post: cmd = %s", cmd)
@@ -110,11 +114,15 @@ func do_post(filePath string) {
     }
 }
 
-func manage_rotated_files(linkName string, dopost bool) {
+/*
+ * The purpose of this function is to clean up old logfiles based on the
+ * nfiles setting, and run the post action on the latest rotated file if
+ * required.
+ */
+func manage_rotated_files(linkName string, postFile string) {
     logger.Debugf("manage_rotated_files: nfiles is %d", nfiles)
+    logger.Debugf("linkName is %s, postFile is %s", linkName, postFile)
     dirname := path.Dir(linkName)
-    basename := path.Base(linkName)
-    logger.Debugf("dirname is %s, basename is %s", dirname, basename)
     files, err := ioutil.ReadDir(dirname)
     if err != nil {
         logger.Fatal(err)
@@ -153,18 +161,19 @@ func manage_rotated_files(linkName string, dopost bool) {
         todelete := len(old_logfiles) - nfiles
         logger.Debugf("need to delete old logfiles: %d", todelete)
         for _, file := range old_logfiles[:todelete] {
-            todelete_path := dirname + "/" + file.Name()
+            todelete_path := path.Join(dirname, file.Name())
             logger.Debugf("deleting: %s", todelete_path)
             if err := os.Remove(todelete_path); err != nil {
                 logger.Fatal(err)
             }
         }
     }
-    // Ok, they've been managed. Now run any post action.
-    if post != "" && dopost {
+    // Ok, they've been managed. Now run any post action on the file that was
+    // just rotated.
+    if post != "" {
         logger.Debugf("post action configured: '%s'", post)
-        last_log := dirname + "/" + old_logfiles[len(old_logfiles)-2].Name()
-        logger.Debugf("last logfile is %s", last_log)
+        last_log := postFile
+        logger.Debugf("rotated file is %s", last_log)
         go do_post(last_log)
     }
 }
@@ -185,7 +194,7 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
     if err = os.Symlink(newOutfileName, linkName); err != nil {
         logger.Fatal(err)
     }
-    manage_rotated_files(linkName, true)
+    manage_rotated_files(linkName, outfileName)
     return newOutfileName, outfile, err
 }
 
@@ -208,10 +217,6 @@ func main() {
         outfileName = timesuffix + ".log"
         outfileName = strings.TrimSuffix(linkName, ".log") + "-" + timesuffix + ".log"
         logger.Debugf("linkName is %q, outfileName is %q", linkName, outfileName)
-        // Skip the post argument on startup, as at this point
-        // a rollover is impossible. If it needs doing it will be done
-        // shortly.
-        manage_rotated_files(linkName, false)
         if linkName == "-" {
             outfile = os.Stdout
             isaFile = false
@@ -220,7 +225,8 @@ func main() {
             // If the logfile exists already, stat it and update the
             // logfileSize and logfileAge globals.
             if linkContents, err := os.Readlink(linkName); err != nil {
-                logger.Debugf("linkName %q does not exist yet", linkName)
+                logger.Debugf("%s", err)
+                logger.Debugf("linkName %q does not exist yet - creating", linkName)
                 if err := os.Symlink(outfileName, linkName); err != nil {
                     log.Fatal(err)
                 }
@@ -234,7 +240,7 @@ func main() {
             if err != nil && os.IsNotExist(err) {
                 logger.Debugf("outfile %q does not yet exist - creating", outfileName)
             } else {
-                logger.Debugf("outfile %q exists already, size is %d bytes, creation time is %s", outfileName, logfileSize, logfileCreationTime)
+                logger.Debugf("outfile %q exists already, size is %d bytes, creation time is %s - using", outfileName, logfileSize, logfileCreationTime)
             }
             outfile, err = os.OpenFile(outfileName,
                                        os.O_WRONLY | os.O_CREATE | os.O_APPEND,
