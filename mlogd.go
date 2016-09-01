@@ -19,7 +19,7 @@ import (
 
 const (
     usage = "mlogd [options] <logfile path>\n"
-    VERSION = "1.2.4"
+    VERSION = "1.2.5"
     select_timeout int64 = 60
 )
 
@@ -266,45 +266,46 @@ selectloop:
         readable := select_stdin(select_timeout)
         logger.Debug("back from select")
 
-        if ! readable {
+        if readable {
+            // Loop over stdin until EOF.
+            var count int64 = 0
+            for {
+                logger.Debugf("count is %d", count)
+                line, readerr := input.ReadString('\n')
+                if readerr != nil {
+                    logger.Debugf("read error: %#v", readerr)
+                    if readerr == io.EOF {
+                        logger.Debug("EOF")
+                        break selectloop
+                    } else {
+                        logger.Debugf("breaking read loop after %d lines", count+1)
+                        break
+                    }
+                }
+                count++
+                if timestamps {
+                    var now time.Time
+                    if localtime {
+                        now = time.Now()
+                    } else {
+                        now = time.Now().UTC()
+                    }
+                    output.WriteString(now.Format(time.StampMicro) + " ")
+                }
+                outBytes, err := output.WriteString(line)
+                if err != nil {
+                    log.Fatalf("Write error: %s\n", err)
+                }
+                logfileSize += int64(outBytes)
+                if flush {
+                    output.Flush()
+                }
+            }
+        } else {
             logger.Debug("stdin not readable")
-            continue
         }
 
-        // Loop over stdin until EOF.
-        var count int64 = 0
-        for {
-            logger.Debugf("count is %d", count)
-            line, readerr := input.ReadString('\n')
-            if readerr != nil {
-                logger.Debugf("read error: %#v", readerr)
-                if readerr == io.EOF {
-                    logger.Debug("EOF")
-                    break selectloop
-                } else {
-                    logger.Debugf("breaking read loop after %d lines", count+1)
-                    break
-                }
-            }
-            count++
-            if timestamps {
-                var now time.Time
-                if localtime {
-                    now = time.Now()
-                } else {
-                    now = time.Now().UTC()
-                }
-                output.WriteString(now.Format(time.StampMicro) + " ")
-            }
-            outBytes, err := output.WriteString(line)
-            if err != nil {
-                log.Fatalf("Write error: %s\n", err)
-            }
-            logfileSize += int64(outBytes)
-            if flush {
-                output.Flush()
-            }
-        }
+        // Check rotation conditions - first by size
         logger.Debugf("logfileSize is now %d, rollover at %d",
             logfileSize, maxsize)
         now := time.Now().UTC()
@@ -319,7 +320,8 @@ selectloop:
             logfileSize = 0
             logfileCreationTime = now.UTC()
         }
-        // And check current time for rollover.
+
+        // and then by age
         duration := now.Sub(logfileCreationTime)
         logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
         logger.Debugf("maxage is %d seconds", maxage)
