@@ -4,24 +4,20 @@ import (
     "syscall"
     "os"
     "log"
-    "time"
 )
 
-func statfile(outfileName string) (logfileSize int64, logfileCreationTime time.Time, err error) {
+func statfile(outfileName string) (logfileSize int64, err error) {
     var stat syscall.Stat_t
     err = syscall.Stat(outfileName, &stat)
     if os.IsNotExist(err) {
         logfileSize = 0
-        logfileCreationTime = time.Now().UTC()
     } else if err != nil {
         log.Fatal(err)
     } else {
         // The file exists. Update our globals.
         logfileSize = stat.Size
-        logfileCreationTime = time.Unix(stat.Ctimespec.Sec,
-                                        stat.Ctimespec.Nsec).UTC()
     }
-    return logfileSize, logfileCreationTime, err
+    return logfileSize, err
 }
 
 func select_stdin(timeout_secs int64) (bool) {

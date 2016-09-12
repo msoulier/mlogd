@@ -15,11 +15,12 @@ import (
     "io"
     "flag"
     "github.com/op/go-logging"
+    "regexp"
 )
 
 const (
     usage = "mlogd [options] <logfile path>\n"
-    VERSION = "1.2.5"
+    VERSION = "1.2.6"
     select_timeout int64 = 60
 )
 
@@ -29,7 +30,7 @@ var (
     maxsize int64 = 0
     maxage int64 = 0
     logfileSize int64 = 0
-    logfileCreationTime = time.Now().UTC()
+    logfileCreationTime = time.Now()
     logger *logging.Logger
     debug = false
     isaFile = true
@@ -199,6 +200,27 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
     return newOutfileName, outfile, err
 }
 
+func parse_creation(outfileName string) (ctime time.Time) {
+    logger.Debugf("parse_creation: outfileName is %s", outfileName)
+    var datetime = regexp.MustCompile(`(\d{14})\.log`)
+    if datetime.MatchString(outfileName) {
+        // Matched name.
+        datetime_string := datetime.FindStringSubmatch(outfileName)[1]
+        logger.Debugf("parsed out datetime: %q", datetime_string)
+        t, err := time.Parse("20060102150405 MST", datetime_string + " EST")
+        if err == nil {
+            logger.Debugf("time %q", t)
+            return t
+        } else {
+            logger.Debugf("time parse error, using now: %s", err)
+            return time.Now()
+        }
+    } else {
+        logger.Debug("failed to match time string, using now")
+        return time.Now()
+    }
+}
+
 func main() {
     var outfile *os.File
     var err error
@@ -224,7 +246,7 @@ func main() {
             logger.Debug("outfile set to stdout")
         } else {
             // If the logfile exists already, stat it and update the
-            // logfileSize and logfileAge globals.
+            // logfileSize global.
             if linkContents, err := os.Readlink(linkName); err != nil {
                 logger.Debugf("%s", err)
                 logger.Debugf("linkName %q does not exist yet - creating", linkName)
@@ -237,10 +259,18 @@ func main() {
                 logger.Debugf("link points to %q", linkContents)
                 outfileName = linkContents
             }
-            logfileSize, logfileCreationTime, err = statfile(outfileName)
+            logfileSize, err = statfile(outfileName)
             if err != nil && os.IsNotExist(err) {
                 logger.Debugf("outfile %q does not yet exist - creating", outfileName)
+                // And if it was just created, then the logfileCreationTime is
+                // now, of course.
+                logfileCreationTime = time.Now()
             } else {
+                // The logfile pointed to by the main log symlink does exist.
+                // The stat tells us its size but its creation date and time
+                // must be parsed out of the name, as we usually don't find
+                // filesystems storing ctime.
+                logfileCreationTime = parse_creation(outfileName)
                 logger.Debugf("outfile %q exists already, size is %d bytes, creation time is %s - using", outfileName, logfileSize, logfileCreationTime)
             }
             outfile, err = os.OpenFile(outfileName,
@@ -308,7 +338,7 @@ selectloop:
         // Check rotation conditions - first by size
         logger.Debugf("logfileSize is now %d, rollover at %d",
             logfileSize, maxsize)
-        now := time.Now().UTC()
+        now := time.Now()
         if logfileSize > maxsize && isaFile {
             logger.Debug("Rolling over logfile")
             outfileName, outfile, err = rollover(linkName, outfileName, outfile)
@@ -318,7 +348,7 @@ selectloop:
                 log.Fatal(err)
             }
             logfileSize = 0
-            logfileCreationTime = now.UTC()
+            logfileCreationTime = now
         }
 
         // and then by age
@@ -334,7 +364,7 @@ selectloop:
                 log.Fatal(err)
             }
             logfileSize = 0
-            logfileCreationTime = now.UTC()
+            logfileCreationTime = now
         }
     }
     output.Flush()

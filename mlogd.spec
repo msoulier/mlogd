@@ -19,6 +19,10 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+*
+- []
+- Adding parse of filename to determine creation datetime.
+
 * Thu Sep  1 2016 Michael Soulier <michael_soulier@mitel.com>
 - [1.2.5-01]
 - Really fixing mlogd's lack of rotation with no input. Really.
