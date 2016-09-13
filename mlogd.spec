@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.2.5
+Version: 1.2.6
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -19,8 +19,8 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
-*
-- []
+* Mon Sep 12 2016 Michael Soulier <michael_soulier@mitel.com>
+- [1.2.6-01]
 - Adding parse of filename to determine creation datetime.
 
 * Thu Sep  1 2016 Michael Soulier <michael_soulier@mitel.com>
