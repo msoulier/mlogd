@@ -21,7 +21,9 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     VERSION = "1.2.6"
+    // FIXME: should these be command-line arguments?
     select_timeout int64 = 60
+    rotation_frequency = 60
 )
 
 var (
@@ -39,6 +41,7 @@ var (
     nfiles = 7
     post = ""
     altext = ""
+    rotation_required = false
 )
 
 func init() {
@@ -101,6 +104,10 @@ func gettimesuffix(now time.Time) string {
     // rfc 3339 - seriously??
     rv := now.Format("200601_2150405")
     logger.Debugf("returning format %s", rv)
+    // The timesuffix returned should never have spaces in it
+    if strings.Contains(rv, " ") {
+        panic(rv)
+    }
     return rv
 }
 
@@ -207,7 +214,9 @@ func parse_creation(outfileName string) (ctime time.Time) {
         // Matched name.
         datetime_string := datetime.FindStringSubmatch(outfileName)[1]
         logger.Debugf("parsed out datetime: %q", datetime_string)
-        t, err := time.Parse("20060102150405 MST", datetime_string + " EST")
+        zone, _ := time.Now().Zone()
+        logger.Debugf("timezone is now %s", zone)
+        t, err := time.Parse("20060102150405 MST", datetime_string + " " + zone)
         if err == nil {
             logger.Debugf("time %q", t)
             return t
@@ -218,6 +227,33 @@ func parse_creation(outfileName string) (ctime time.Time) {
     } else {
         logger.Debug("failed to match time string, using now")
         return time.Now()
+    }
+}
+
+func check_rotation() {
+    // Loop forever, checking rotation_frequency seconds if the file needs
+    // rotating.
+    for {
+        // Check rotation conditions - first by size
+        logger.Debugf("logfileSize is now %d, rollover at %d",
+            logfileSize, maxsize)
+        now := time.Now()
+
+        if logfileSize > maxsize && isaFile {
+            rotation_required = true
+        }
+
+        // and then by age
+        duration := now.Sub(logfileCreationTime)
+        logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
+        logger.Debugf("maxage is %d seconds", maxage)
+
+        if int64(duration.Seconds()) >= maxage && isaFile {
+            rotation_required = true
+        }
+
+        logger.Debugf("sleeping for %d seconds", rotation_frequency)
+        time.Sleep(rotation_frequency * time.Second)
     }
 }
 
@@ -237,6 +273,9 @@ func main() {
         timesuffix := gettimesuffix(time.Now())
         // FIXME: make .log extension configurable
         linkName = os.Args[len(os.Args)-1]
+        if ! strings.HasPrefix(linkName, "/") {
+            log.Fatal("not an absolute path: ", linkName)
+        }
         outfileName = timesuffix + ".log"
         outfileName = strings.TrimSuffix(linkName, ".log") + "-" + timesuffix + ".log"
         logger.Debugf("linkName is %q, outfileName is %q", linkName, outfileName)
@@ -290,8 +329,23 @@ func main() {
     // Input is always stdin.
     input := bufio.NewReader(os.Stdin)
 
+    // Start goroutine to check for rotation.
+    go check_rotation();
+
 selectloop:
     for {
+        if rotation_required {
+            outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+            output.Flush()
+            output = bufio.NewWriter(io.Writer(outfile))
+            if err != nil {
+                log.Fatal(err)
+            }
+            logfileSize = 0
+            logfileCreationTime = time.Now()
+            rotation_required = false
+        }
+
         logger.Debugf("going into select on stdin, timeout is %ds", select_timeout)
         readable := select_stdin(select_timeout)
         logger.Debug("back from select")
@@ -300,6 +354,10 @@ selectloop:
             // Loop over stdin until EOF.
             var count int64 = 0
             for {
+                // Break out of the inner reading loop if rotation is needed.
+                if rotation_required {
+                    break;
+                }
                 logger.Debugf("count is %d", count)
                 line, readerr := input.ReadString('\n')
                 if readerr != nil {
@@ -335,37 +393,6 @@ selectloop:
             logger.Debug("stdin not readable")
         }
 
-        // Check rotation conditions - first by size
-        logger.Debugf("logfileSize is now %d, rollover at %d",
-            logfileSize, maxsize)
-        now := time.Now()
-        if logfileSize > maxsize && isaFile {
-            logger.Debug("Rolling over logfile")
-            outfileName, outfile, err = rollover(linkName, outfileName, outfile)
-            output.Flush()
-            output = bufio.NewWriter(io.Writer(outfile))
-            if err != nil {
-                log.Fatal(err)
-            }
-            logfileSize = 0
-            logfileCreationTime = now
-        }
-
-        // and then by age
-        duration := now.Sub(logfileCreationTime)
-        logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
-        logger.Debugf("maxage is %d seconds", maxage)
-        if int64(duration.Seconds()) >= maxage && isaFile {
-            logger.Debug("Rolling over logfile")
-            outfileName, outfile, err = rollover(linkName, outfileName, outfile)
-            output.Flush()
-            output = bufio.NewWriter(io.Writer(outfile))
-            if err != nil {
-                log.Fatal(err)
-            }
-            logfileSize = 0
-            logfileCreationTime = now
-        }
     }
     output.Flush()
     if isaFile {

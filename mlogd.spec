@@ -19,6 +19,13 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+*
+- []
+- Fixing build of broken symlink on relative path.
+- Added assertion if space is found in filename.
+- Moved rotation check to a background goroutine so it works when there is no
+  input, or with blocking I/O.
+
 * Mon Sep 12 2016 Michael Soulier <michael_soulier@mitel.com>
 - [1.2.6-01]
 - Adding parse of filename to determine creation datetime.
