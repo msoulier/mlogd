@@ -25,6 +25,7 @@ rotation hook that allows compression to a .log.gz file.
 - Added assertion if space is found in filename.
 - Moved rotation check to a background goroutine so it works when there is no
   input, or with blocking I/O.
+- Updated format to ensure no spaces in filenames.
 
 * Mon Sep 12 2016 Michael Soulier <michael_soulier@mitel.com>
 - [1.2.6-01]

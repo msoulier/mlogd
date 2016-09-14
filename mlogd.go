@@ -108,7 +108,7 @@ func gettimesuffix(now time.Time) string {
     // http://fuckinggodateformat.com/
     // %Y%m%e%H%M%S
     // rfc 3339 - seriously??
-    rv := now.Format("200601_2150405")
+    rv := now.Format("200601150405")
     logger.Debugf("returning format %s", rv)
     // The timesuffix returned should never have spaces in it
     if strings.Contains(rv, " ") {
