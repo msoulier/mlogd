@@ -21,9 +21,6 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     VERSION = "1.2.6"
-    // FIXME: should these be command-line arguments?
-    select_timeout int64 = 60
-    rotation_frequency = 60
 )
 
 var (
@@ -42,6 +39,8 @@ var (
     post = ""
     altext = ""
     rotation_required = false
+    rotation_frequency time.Duration = 60
+    select_timeout time.Duration = 60
 )
 
 func init() {
@@ -89,6 +88,13 @@ func init() {
     logger.Debugf("nfiles is %q", nfiles)
     logger.Debugf("post is %q", post)
     logger.Debugf("altext is %q", altext)
+    // set rotation_frequency to the lesser of itself or the maxage argument
+    if time.Duration(maxage) < rotation_frequency {
+        rotation_frequency = time.Duration(maxage)
+    }
+    if time.Duration(maxage) < select_timeout {
+        select_timeout = time.Duration(maxage)
+    }
 }
 
 // For sorting FileInfo objects by Name
@@ -141,9 +147,12 @@ func manage_rotated_files(linkName string, postFile string) {
     // The first extension is always .log
     logfile_exts = append(logfile_exts, ".log")
     for _, ext := range strings.Split(altext, ",") {
-        logfile_exts = append(logfile_exts, ext)
+        if ext != "" {
+            logger.Debugf("adding '%s' to the extension list", ext)
+            logfile_exts = append(logfile_exts, ext)
+        }
     }
-    logger.Debugf("logfile_exts: %s", logfile_exts)
+    logger.Debugf("logfile_exts: %s, size %d", logfile_exts, len(logfile_exts))
     // An array of files to return
     old_logfiles := make([]os.FileInfo, 0, 100)
     for _, file := range files {
@@ -158,6 +167,7 @@ func manage_rotated_files(linkName string, postFile string) {
         }
         // We only want supported file extensions.
         for _, ext := range logfile_exts {
+            logger.Debugf("    looping on extension '%s'", ext)
             if strings.HasSuffix(file.Name(), ext) {
                 logger.Debug("    this is a logfile")
                 old_logfiles = append(old_logfiles, file)
@@ -240,6 +250,7 @@ func check_rotation() {
         now := time.Now()
 
         if logfileSize > maxsize && isaFile {
+            logger.Debug("flagging rotation required by size")
             rotation_required = true
         }
 
@@ -249,6 +260,7 @@ func check_rotation() {
         logger.Debugf("maxage is %d seconds", maxage)
 
         if int64(duration.Seconds()) >= maxage && isaFile {
+            logger.Debug("flagging rotation required by age")
             rotation_required = true
         }
 
@@ -347,7 +359,7 @@ selectloop:
         }
 
         logger.Debugf("going into select on stdin, timeout is %ds", select_timeout)
-        readable := select_stdin(select_timeout)
+        readable := select_stdin(int64(select_timeout))
         logger.Debug("back from select")
 
         if readable {
