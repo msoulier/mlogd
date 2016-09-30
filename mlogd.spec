@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.2.8
+Version: 1.2.9
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -19,6 +19,10 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Fri Sep 30 2016 Michael Soulier <michael_soulier@mitel.com>
+- [1.2.9-01]
+- Including go-logging in our src tree.
+
 * Wed Sep 14 2016 Michael Soulier <michael_soulier@mitel.com>
 - [1.2.8-01]
 - Fixing a bug in the date format string.
@@ -67,6 +71,7 @@ rotation hook that allows compression to a .log.gz file.
 %setup -q
 
 %build
+export GOPATH=$(pwd)
 go build -o mlogd
 
 %install
