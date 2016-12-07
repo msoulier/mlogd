@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.2.11
+Version: 1.3.0
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
