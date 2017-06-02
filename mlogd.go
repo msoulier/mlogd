@@ -16,6 +16,8 @@ import (
     "flag"
     "github.com/op/go-logging"
     "regexp"
+    "os/signal"
+    "syscall"
 )
 
 const (
@@ -41,6 +43,7 @@ var (
     rotation_required = false
     rotation_frequency time.Duration = 60
     select_timeout time.Duration = 60
+    shutdown_asap = false
 )
 
 func init() {
@@ -269,6 +272,26 @@ func check_rotation() {
     }
 }
 
+func handle_hup(input <-chan os.Signal) {
+    logger.Debugf("handle_hup: waiting on signal")
+    sig := <-input
+    logger.Debugf("HUP signal received: %s", sig)
+}
+
+func handle_alarm(input <-chan os.Signal) {
+    logger.Debugf("handle_alarm: waiting on signal")
+    sig := <-input
+    logger.Debugf("ALRM signal received: %s", sig)
+    rotation_required = true
+}
+
+func handle_shutdown(input <-chan os.Signal) {
+    logger.Debugf("handle_shutdown: waiting on signal")
+    sig := <-input
+    logger.Debugf("INT or TERM signal received: %s", sig)
+    shutdown_asap = true
+}
+
 func main() {
     var outfile *os.File
     var err error
@@ -279,6 +302,24 @@ func main() {
         fmt.Printf("mlogd version %s on %s\n", VERSION, runtime.GOOS)
         os.Exit(0)
     }
+
+    // On SIGHUP we should close and reopen all logs.
+    hup_sigs := make(chan os.Signal, 1)
+    // On SIGALRM we should force logfile rotation.
+    alarm_sigs := make(chan os.Signal, 1)
+    // On SIGTERM or SIGINT we should shutdown.
+    shutdown_sigs := make(chan os.Signal, 1)
+
+    // And launch our goroutines to handle them.
+    // FIXME: Can likely consolidate all these.
+    go handle_hup(hup_sigs)
+    go handle_alarm(alarm_sigs)
+    go handle_shutdown(shutdown_sigs)
+
+    // Register the channels for those signals.
+    signal.Notify(hup_sigs, syscall.SIGHUP)
+    signal.Notify(alarm_sigs, syscall.SIGALRM)
+    signal.Notify(shutdown_sigs, syscall.SIGINT, syscall.SIGTERM)
 
     // Output is the file supplied on the command line.
     if len(flag.Args()) > 0 {
@@ -377,6 +418,9 @@ selectloop:
                     if readerr == io.EOF {
                         logger.Debug("EOF")
                         break selectloop
+                    } else if shutdown_asap {
+                        logger.Debug("shutdown_asap")
+                        break selectloop
                     } else {
                         logger.Debugf("breaking read loop after %d lines", count+1)
                         break
@@ -410,4 +454,5 @@ selectloop:
     if isaFile {
         outfile.Close()
     }
+    os.Exit(0)
 }
