@@ -359,7 +359,7 @@ selectloop:
         }
 
         logger.Debugf("going into select on stdin, timeout is %ds", select_timeout)
-        readable := select_stdin(int64(select_timeout))
+        readable := select_stdin(select_timeout)
         logger.Debug("back from select")
 
         if readable {

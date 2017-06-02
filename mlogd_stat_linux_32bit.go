@@ -1,9 +1,12 @@
+// +build linux,386 linux,arm
+
 package main
 
 import (
     "syscall"
     "os"
     "log"
+    "time"
 )
 
 func statfile(outfileName string) (logfileSize int64, err error) {
@@ -20,10 +23,10 @@ func statfile(outfileName string) (logfileSize int64, err error) {
     return logfileSize, err
 }
 
-func select_stdin(timeout_secs int64) (bool) {
+func select_stdin(timeout_secs time.Duration) (bool) {
     var r_fdset syscall.FdSet
     var timeout syscall.Timeval
-    timeout.Sec = timeout_secs
+    timeout.Sec = int32(timeout_secs)
     timeout.Usec = 0
     for i := 0; i < 16; i++ {
         r_fdset.Bits[i] = 0
