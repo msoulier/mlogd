@@ -35,19 +35,19 @@ rotation hook that allows compression to a .log.gz file.
 - [1.2.11-01]
 - None
 
-* Wed Oct  5 2016 Michael Soulier <michael_soulier@mitel.com>
+* Wed Oct  5 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.10-01]
 - Fixing path to genfilelist. [MN00650422]
 
-* Fri Sep 30 2016 Michael Soulier <michael_soulier@mitel.com>
+* Fri Sep 30 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.9-01]
 - Including go-logging in our src tree.
 
-* Wed Sep 14 2016 Michael Soulier <michael_soulier@mitel.com>
+* Wed Sep 14 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.8-01]
 - Fixing a bug in the date format string.
 
-* Wed Sep 14 2016 Michael Soulier <michael_soulier@mitel.com>
+* Wed Sep 14 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.7-01]
 - Fixing build of broken symlink on relative path.
 - Added assertion if space is found in filename.
@@ -55,35 +55,35 @@ rotation hook that allows compression to a .log.gz file.
   input, or with blocking I/O.
 - Updated format to ensure no spaces in filenames.
 
-* Mon Sep 12 2016 Michael Soulier <michael_soulier@mitel.com>
+* Mon Sep 12 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.6-01]
 - Adding parse of filename to determine creation datetime.
 
-* Thu Sep  1 2016 Michael Soulier <michael_soulier@mitel.com>
+* Thu Sep  1 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.5-01]
 - Really fixing mlogd's lack of rotation with no input. Really.
 
-* Tue Aug 30 2016 Michael Soulier <michael_soulier@mitel.com>
+* Tue Aug 30 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.4-01]
 - Fixing mlogd's lack of rotation with no input.
 
-* Tue Aug 23 2016 Michael Soulier <michael_soulier@mitel.com>
+* Tue Aug 23 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.3-01]
 - Improving detection of newly rotated file to run post on.
 
-* Mon Aug 22 2016 Michael Soulier <michael_soulier@mitel.com>
+* Mon Aug 22 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.2-01]
 - Fixing a lack of post action run on startup.
 
-* Wed Jul 20 2016 Michael Soulier <michael_soulier@mitel.com>
+* Wed Jul 20 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2.1-01]
 - Adding additional debug.
 
-* Wed Jul 20 2016 Michael Soulier <michael_soulier@mitel.com>
+* Wed Jul 20 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.2-01]
 - Fixing mlogd permissions.
 
-* Wed Jul 20 2016 Michael Soulier <michael_soulier@mitel.com>
+* Wed Jul 20 2016 Michael Soulier <msoulier@digitaltorque.ca>
 - [1.1-01]
 - Initial rpm build.
 

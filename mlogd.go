@@ -20,7 +20,7 @@ import (
 
 const (
     usage = "mlogd [options] <logfile path>\n"
-    VERSION = "1.2.8"
+    VERSION = "1.3.4"
 )
 
 var (
