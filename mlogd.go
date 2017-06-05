@@ -23,6 +23,7 @@ import (
 const (
     usage = "mlogd [options] <logfile path>\n"
     VERSION = "1.2.8"
+    shutdown_wait_time = 5
 )
 
 var (
@@ -276,20 +277,27 @@ func handle_hup(input <-chan os.Signal) {
     logger.Debugf("handle_hup: waiting on signal")
     sig := <-input
     logger.Debugf("HUP signal received: %s", sig)
+    // Right now we do nothing with a sighup. svlogd re-reads its config, but ours is all
+    // command-line.
 }
 
 func handle_alarm(input <-chan os.Signal) {
     logger.Debugf("handle_alarm: waiting on signal")
     sig := <-input
-    logger.Debugf("ALRM signal received: %s", sig)
+    logger.Info("ALRM signal received: %s - forcing rotation", sig)
     rotation_required = true
 }
 
 func handle_shutdown(input <-chan os.Signal) {
     logger.Debugf("handle_shutdown: waiting on signal")
     sig := <-input
-    logger.Debugf("INT or TERM signal received: %s", sig)
+    logger.Info("INT or TERM signal received:", sig)
     shutdown_asap = true
+    // If we don't shut down in shutdown_wait_time, then we're not getting any input, so 
+    // trigger an exit.
+    time.Sleep(shutdown_wait_time * time.Second)
+    logger.Debugf("handle_shutdown: timeout on shutdown")
+    os.Exit(0)
 }
 
 func main() {
