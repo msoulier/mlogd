@@ -18,6 +18,7 @@ import (
     "regexp"
     "os/signal"
     "syscall"
+    mlib "github.com/msoulier/mlib"
 )
 
 const (
@@ -359,7 +360,7 @@ func main() {
                 logger.Debugf("link points to %q", linkContents)
                 outfileName = linkContents
             }
-            logfileSize, err = statfile(outfileName)
+            logfileSize, err = mlib.Statfile(outfileName)
             if err != nil && os.IsNotExist(err) {
                 logger.Debugf("outfile %q does not yet exist - creating", outfileName)
                 // And if it was just created, then the logfileCreationTime is
@@ -408,7 +409,7 @@ selectloop:
         }
 
         logger.Debugf("going into select on stdin, timeout is %ds", select_timeout)
-        readable := select_stdin(select_timeout)
+        readable := mlib.SelectStdin(select_timeout)
         logger.Debug("back from select")
 
         if readable {
