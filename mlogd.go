@@ -360,7 +360,7 @@ func main() {
                 logger.Debugf("link points to %q", linkContents)
                 outfileName = linkContents
             }
-            logfileSize, err = mlib.Statfile(outfileName)
+            logfileSize, err = mlib.StatfileSize(outfileName)
             if err != nil && os.IsNotExist(err) {
                 logger.Debugf("outfile %q does not yet exist - creating", outfileName)
                 // And if it was just created, then the logfileCreationTime is
