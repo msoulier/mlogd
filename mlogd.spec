@@ -103,7 +103,7 @@ rotation hook that allows compression to a .log.gz file.
 %setup -q
 
 %build
-export GOPATH=$(pwd)
+export GOPATH=$(pwd):$HOME/work/go
 go build -o mlogd
 
 %install
