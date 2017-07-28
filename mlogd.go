@@ -360,7 +360,7 @@ func main() {
                 logger.Debugf("link points to %q", linkContents)
                 outfileName = linkContents
             }
-            logfileSize, err = mlib.StatfileSize(outfileName)
+            logfileStat, err := os.Stat(outfileName)
             if err != nil && os.IsNotExist(err) {
                 logger.Debugf("outfile %q does not yet exist - creating", outfileName)
                 // And if it was just created, then the logfileCreationTime is
@@ -371,6 +371,7 @@ func main() {
                 // The stat tells us its size but its creation date and time
                 // must be parsed out of the name, as we usually don't find
                 // filesystems storing ctime.
+                logfileSize = logfileStat.Size()
                 logfileCreationTime = parse_creation(outfileName)
                 logger.Debugf("outfile %q exists already, size is %d bytes, creation time is %s - using", outfileName, logfileSize, logfileCreationTime)
             }
