@@ -1,0 +1,13 @@
+Source: mlogd
+Section: unknown
+Priority: extra
+Maintainer: Michael P. Soulier <michael_soulier@mitel.com>
+Build-Depends: debhelper (>= 8.0.0), golang-go
+Standards-Version: 3.9.3
+
+Package: mlogd
+Architecture: armhf
+Depends: ${misc:Depends}
+Description: mlogd
+    This package contains a simple svlogd replacement with some features that
+    were needed in a logger for the mitel-border-gateway.

@@ -1,0 +1,30 @@
+#!/bin/sh
+
+export DEBEMAIL=michael.soulier@mitel.com
+export DEBFULLNAME="Michael P. Soulier"
+
+echo "Cleaning up..."
+rm -rf build
+build_dir="build/mlogd"
+
+echo "Setting up..."
+mkdir -p $build_dir
+cp -R *.go src $build_dir || exit 1
+
+echo "mlogd usr/sbin" > install
+cat install > debian/install
+
+cd build/mlogd || exit 1
+
+echo "\n" | dh_make --native --single
+
+rsync -vaz --delete ../../debian .
+
+echo "Building..."
+debuild --source-option=--include-binaries -us -uc || exit 1
+
+cd ..
+echo "Signing .deb..."
+dpkg-sig --sign builder *.deb
+
+exit 0
