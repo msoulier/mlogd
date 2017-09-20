@@ -399,6 +399,7 @@ selectloop:
     for {
         if rotation_required {
             outfileName, outfile, err = rollover(linkName, outfileName, outfile)
+            logger.Debug("flushing output")
             output.Flush()
             output = bufio.NewWriter(io.Writer(outfile))
             if err != nil {
@@ -450,8 +451,10 @@ selectloop:
                 if err != nil {
                     log.Fatalf("Write error: %s\n", err)
                 }
+                logger.Debugf("wrote %d bytes to output file", outBytes)
                 logfileSize += int64(outBytes)
                 if flush {
+                    logger.Debug("flushing output")
                     output.Flush()
                 }
             }
