@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.3.13
+Version: 1.3.14
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -19,6 +19,16 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Thu Nov 2 2017 Auto build <do-not-reply@mitel.com>
+- [1.3.14-01]
+- 68bdcd6 Adding a check for deleting the just-rotated file.
+- 1de10ab Updating signal handlers to loop indefinitely, except for handle_shutdown.
+- 0cbcb2d fixing logger info statement
+- 71d35cf Flushing test output
+- a8aad80 Adding some debug
+- 5ca45e4 Simplifying the fake_input script
+- 82d1161 First mlogd .deb package
+
 * Thu Nov 2 2017 Auto build <do-not-reply@mitel.com>
 - [1.3.13-01]
 - 68bdcd6 Adding a check for deleting the just-rotated file.
