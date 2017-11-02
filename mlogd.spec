@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.3.10
+Version: 1.3.12
 Release: 01
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -19,6 +19,16 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Fri Aug 4 2017 Auto build <do-not-reply@mitel.com>
+- [1.3.12-01]
+- 5e5d6b3 Moving to use os.Stat for file size.
+- 510cebc New dep
+
+* Fri Jul 28 2017 Auto build <do-not-reply@mitel.com>
+- [1.3.11-01]
+- 5e5d6b3 Moving to use os.Stat for file size.
+- 510cebc New dep
+
 * Sat Jul 22 2017 Auto Build <do-not-reply@mitel.com>
 - [1.3.10-01]
 - b7d8b81 Auto build: updating specfile
