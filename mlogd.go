@@ -186,9 +186,13 @@ func manage_rotated_files(linkName string, postFile string) {
         logger.Debugf("need to delete old logfiles: %d", todelete)
         for _, file := range old_logfiles[:todelete] {
             todelete_path := path.Join(dirname, file.Name())
-            logger.Debugf("deleting: %s", todelete_path)
-            if err := os.Remove(todelete_path); err != nil {
-                logger.Fatal(err)
+            if todelete_path != postFile {
+                logger.Debugf("deleting: %s", todelete_path)
+                if err := os.Remove(todelete_path); err != nil {
+                    logger.Fatal(err)
+                }
+            } else {
+                logger.Warning("Was about to delete rotated file:", postFile)
             }
         }
     }
@@ -212,9 +216,11 @@ func rollover(linkName string, outfileName string, outfile *os.File) (string, *o
                                os.O_WRONLY | os.O_CREATE | os.O_APPEND,
                                0600)
     // Move the symlink
+    logger.Debugf("removing symlink: %s", linkName)
     if err = os.Remove(linkName); err != nil {
         logger.Fatal(err)
     }
+    logger.Debugf("recreating symlink: %s -> %s", linkName, newOutfileName)
     if err = os.Symlink(newOutfileName, linkName); err != nil {
         logger.Fatal(err)
     }
