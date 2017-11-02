@@ -285,7 +285,7 @@ func handle_hup(input <-chan os.Signal) {
 func handle_alarm(input <-chan os.Signal) {
     logger.Debugf("handle_alarm: waiting on signal")
     sig := <-input
-    logger.Info("ALRM signal received: %s - forcing rotation", sig)
+    logger.Info("ALRM signal received: forcing rotation", sig)
     rotation_required = true
 }
 
