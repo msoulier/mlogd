@@ -1,6 +1,6 @@
 Name: mlogd
-Version: 1.3.12
-Release: 01
+Version: 1.4.0
+Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
 License: MIT
@@ -19,6 +19,10 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Tue Jun 26 2018 Michael P. Soulier <michael.soulier@mitel.com>
+- [1.4.0-01el7]
+- Bumping version for 10.2 stream.
+
 * Fri Aug 4 2017 Auto build <do-not-reply@mitel.com>
 - [1.3.12-01]
 - 5e5d6b3 Moving to use os.Stat for file size.
