@@ -23,6 +23,36 @@ rotation hook that allows compression to a .log.gz file.
 - [1.4.0-01el7]
 - Bumping version for 10.2 stream.
 
+* Thu Nov 2 2017 Auto build <do-not-reply@mitel.com>
+- [1.3.15-01]
+- 68bdcd6 Adding a check for deleting the just-rotated file.
+- 1de10ab Updating signal handlers to loop indefinitely, except for handle_shutdown.
+- 0cbcb2d fixing logger info statement
+- 71d35cf Flushing test output
+- a8aad80 Adding some debug
+- 5ca45e4 Simplifying the fake_input script
+- 82d1161 First mlogd .deb package
+
+* Thu Nov 2 2017 Auto build <do-not-reply@mitel.com>
+- [1.3.14-01]
+- 68bdcd6 Adding a check for deleting the just-rotated file.
+- 1de10ab Updating signal handlers to loop indefinitely, except for handle_shutdown.
+- 0cbcb2d fixing logger info statement
+- 71d35cf Flushing test output
+- a8aad80 Adding some debug
+- 5ca45e4 Simplifying the fake_input script
+- 82d1161 First mlogd .deb package
+
+* Thu Nov 2 2017 Auto build <do-not-reply@mitel.com>
+- [1.3.13-01]
+- 68bdcd6 Adding a check for deleting the just-rotated file.
+- 1de10ab Updating signal handlers to loop indefinitely, except for handle_shutdown.
+- 0cbcb2d fixing logger info statement
+- 71d35cf Flushing test output
+- a8aad80 Adding some debug
+- 5ca45e4 Simplifying the fake_input script
+- 82d1161 First mlogd .deb package
+
 * Fri Aug 4 2017 Auto build <do-not-reply@mitel.com>
 - [1.3.12-01]
 - 5e5d6b3 Moving to use os.Stat for file size.
