@@ -456,7 +456,9 @@ selectloop:
                     } else {
                         now = time.Now().UTC()
                     }
-                    output.WriteString(now.Format(time.StampMicro) + " ")
+                    //output.WriteString(now.Format(time.StampMicro) + " ")
+                    fmt := "2006-01-02 15:04:05.000-0700"
+                    output.WriteString(now.Format(fmt) + " ")
                 }
                 outBytes, err := output.WriteString(line)
                 if err != nil {
