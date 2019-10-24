@@ -46,6 +46,7 @@ var (
     rotation_frequency time.Duration = 60
     select_timeout time.Duration = 60
     shutdown_asap = false
+    stdout = false
 )
 
 func init() {
@@ -60,6 +61,7 @@ func init() {
     flag.BoolVar(&debug, "debug", false, "Debug logging in mlogd")
     flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
     flag.BoolVar(&version, "version", false, "Print version and quit")
+    flag.BoolVar(&stdout, "stdout", false, "Print each line received to stdout as well as the logfile")
     flag.IntVar(&nfiles, "nfiles", 7, "The number of log files to keep")
     flag.StringVar(&post, "post", "", "A post-rotation shell command to run on the rotated file")
     flag.StringVar(&altext, "altext", "", "Additional comma-separated file extensions to consider log files")
@@ -469,6 +471,9 @@ selectloop:
                 if flush {
                     logger.Debug("flushing output")
                     output.Flush()
+                }
+                if stdout {
+                    fmt.Println(line)
                 }
             }
         } else {
