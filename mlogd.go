@@ -476,7 +476,7 @@ selectloop:
                     output.Flush()
                 }
                 if stdout {
-                    fmt.Println(line)
+                    fmt.Printf(line)
                 }
             }
         } else {
