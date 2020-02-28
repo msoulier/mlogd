@@ -23,7 +23,7 @@ import (
 
 const (
     usage = "mlogd [options] <logfile path>\n"
-    VERSION = "1.3.5"
+    VERSION = "1.5.5"
     shutdown_wait_time = 5
 )
 
@@ -56,7 +56,7 @@ func init() {
     )
     flag.BoolVar(&timestamps, "timestamps", false, "Prefix all output lines with timestamps")
     flag.Int64Var(&maxsize, "maxsize", defaultMaxSize, "Maximum size of logfile in bytes before rotation")
-    flag.Int64Var(&maxage, "maxage", defaultMaxAge, "Maximum age of logfile in seconds before rotation")
+    flag.Int64Var(&maxage, "maxage", defaultMaxAge, "Maximum age of logfile in seconds before rotation (0 to disable age rotation)")
     flag.BoolVar(&localtime, "localtime", false, "Render timestamps in localtime instead of UTC")
     flag.BoolVar(&debug, "debug", false, "Debug logging in mlogd")
     flag.BoolVar(&flush, "flush", false, "Flush output buffer on each line")
@@ -96,11 +96,13 @@ func init() {
     logger.Debugf("post is %q", post)
     logger.Debugf("altext is %q", altext)
     // set rotation_frequency to the lesser of itself or the maxage argument
-    if time.Duration(maxage) < rotation_frequency {
-        rotation_frequency = time.Duration(maxage)
-    }
-    if time.Duration(maxage) < select_timeout {
-        select_timeout = time.Duration(maxage)
+    if maxage > 0 {
+        if time.Duration(maxage) < rotation_frequency {
+            rotation_frequency = time.Duration(maxage)
+        }
+        if time.Duration(maxage) < select_timeout {
+            select_timeout = time.Duration(maxage)
+        }
     }
 }
 
@@ -268,13 +270,15 @@ func check_rotation() {
         }
 
         // and then by age
-        duration := now.Sub(logfileCreationTime)
-        logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
-        logger.Debugf("maxage is %d seconds", maxage)
+        if maxage > 0 {
+            duration := now.Sub(logfileCreationTime)
+            logger.Debugf("It has been %f seconds since file creation", duration.Seconds())
+            logger.Debugf("maxage is %d seconds", maxage)
 
-        if int64(duration.Seconds()) >= maxage && isaFile {
-            logger.Debug("flagging rotation required by age")
-            rotation_required = true
+            if int64(duration.Seconds()) >= maxage && isaFile {
+                logger.Debug("flagging rotation required by age")
+                rotation_required = true
+            }
         }
 
         logger.Debugf("sleeping for %d seconds", rotation_frequency)
