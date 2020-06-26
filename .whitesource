@@ -1,0 +1,13 @@
+{
+  "scanSettings": {
+    "configMode": "AUTO",
+    "configExternalURL": "",
+    "projectToken" : "" 
+  },
+  "buildSettings": {
+    "failBuilds": true
+  },
+  "issueSettings": {
+    "minSeverityLevel": "LOW"
+  }
+}
