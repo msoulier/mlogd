@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.5.5
+Version: 1.5.6
 Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -19,6 +19,10 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Sat Jun 27 2020 Auto build <do-not-reply@mitel.com>
+- [1.5.6-01el7]
+- d36ad6e Add .whitesource configuration file
+
 * Sat Feb 29 2020 Auto build <do-not-reply@mitel.com>
 - [1.5.5-01el7]
 - fe9ed80 Making maxage == 0 mean disabled. [MBG-4124:solved]
