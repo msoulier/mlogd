@@ -18,12 +18,13 @@ import (
     "regexp"
     "os/signal"
     "syscall"
+    "net"
     mlib "github.com/msoulier/mlib"
 )
 
 const (
     usage = "mlogd [options] <logfile path>\n"
-    VERSION = "1.5.5"
+    VERSION = "1.6.0"
     shutdown_wait_time = 5
 )
 
@@ -47,6 +48,9 @@ var (
     select_timeout time.Duration = 60
     shutdown_asap = false
     stdout = false
+    udpaddr = ""
+    udp_logging = false
+    udp_sock *net.UDPConn = nil
 )
 
 func init() {
@@ -65,6 +69,7 @@ func init() {
     flag.IntVar(&nfiles, "nfiles", 7, "The number of log files to keep")
     flag.StringVar(&post, "post", "", "A post-rotation shell command to run on the rotated file")
     flag.StringVar(&altext, "altext", "", "Additional comma-separated file extensions to consider log files")
+    flag.StringVar(&udpaddr, "udpaddr", "", "Also stream received logs to host over udp: <host:port>")
     flag.Parse()
 
     // The colour logger is problematic for capturing logs in text files.
@@ -102,6 +107,24 @@ func init() {
         }
         if time.Duration(maxage) < select_timeout {
             select_timeout = time.Duration(maxage)
+        }
+    }
+    // Syntax check on udpaddr
+    if udpaddr != "" {
+        udp_logging = true
+        logger.Debugf("udpaddr is set - checking syntax: %s", udpaddr)
+        raddr, err := net.ResolveUDPAddr("udp", udpaddr)
+        if err != nil {
+            logger.Errorf("failed to resolve udp host %s: %s", udpaddr, err)
+            logger.Errorf("UDP logging disabled")
+            udp_logging = false
+        }
+        if conn, err := net.DialUDP("udp", nil, raddr); err != nil {
+            logger.Errorf("cannot establish: %s", err)
+            logger.Errorf("UDP logging disabled")
+            udp_logging = false
+        } else {
+            udp_sock = conn
         }
     }
 }
@@ -318,6 +341,19 @@ func handle_shutdown(input <-chan os.Signal) {
     os.Exit(0)
 }
 
+func udp_log(msg string) {
+    if udp_sock == nil {
+        logger.Error("udp_sock is nil, cannot send")
+    }
+    // Convert to bytes for writing.
+    b := []byte(msg)
+    if nbytes, err := udp_sock.Write(b); err != nil {
+        logger.Errorf("udp_sock.Write: %s", err)
+    } else {
+        logger.Debug("%d bytes sent over udp", nbytes)
+    }
+}
+
 func main() {
     var outfile *os.File
     var err error
@@ -462,11 +498,14 @@ selectloop:
                     } else {
                         now = time.Now().UTC()
                     }
-                    //output.WriteString(now.Format(time.StampMicro) + " ")
                     format := "2006-01-02 15:04:05.000-0700"
-                    output.WriteString(now.Format(format) + " ")
+                    msg := fmt.Sprintf("%s ", now.Format(format))
+                    output.WriteString(msg)
                     if stdout {
-                        fmt.Printf("%s ", now.Format(format))
+                        fmt.Print(msg)
+                    }
+                    if udp_logging {
+                        udp_log(msg)
                     }
                 }
                 outBytes, err := output.WriteString(line)
@@ -481,6 +520,9 @@ selectloop:
                 }
                 if stdout {
                     fmt.Printf(line)
+                }
+                if udp_logging {
+                    udp_log(line)
                 }
             }
         } else {
