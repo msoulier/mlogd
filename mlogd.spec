@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.5.9
+Version: 1.5.10
 Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -19,6 +19,10 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Thu Aug 20 2020 Auto build <do-not-reply@mitel.com>
+- [1.5.10-01el7]
+- 3a95b59 Migrate .whitesource configuration file to inheritance mode
+
 * Wed Jul 22 2020 Auto build <do-not-reply@mitel.com>
 - [1.5.9-01el7]
 - 870c686 Adding udp streaming to mlogd. [MBG-4276]
