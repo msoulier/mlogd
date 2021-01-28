@@ -17,7 +17,7 @@ AutoReqProv: no
 BuildArch: aarch64
 %else
 %{echo:"targetplatform macro: Building for MSL"}
-BuildArch: x86_84
+BuildArch: x86_64
 %endif
 %else
 %{echo:"No targetplatform macro: Building for MSL"}
