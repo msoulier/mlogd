@@ -11,7 +11,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 AutoReqProv: no
 %define __os_install_post %{nil}
 %define debug_package %{nil}
-%if %{targetplatform}
+%if %{?targetplatform:1}%{!?targetplatform:0}
 %if %{targetplatform} == "smbc"
 %{echo:"targetplatform macro: Building for SMBC"}
 BuildArch: aarch64
