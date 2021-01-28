@@ -8,10 +8,21 @@ Group: System
 Source0: %{name}-%{version}.tar.gz
 BuildRequires: golang
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-BuildArch: x86_64
 AutoReqProv: no
 %define __os_install_post %{nil}
 %define debug_package %{nil}
+%if %{targetplatform}
+%if %{targetplatform} == "smbc"
+%{echo:"targetplatform macro: Building for SMBC"}
+BuildArch: aarch64
+%else
+%{echo:"targetplatform macro: Building for MSL"}
+BuildArch: x86_84
+%endif
+%else
+%{echo:"No targetplatform macro: Building for MSL"}
+BuildArch: x86_64
+%endif
 
 %description
 This is a multilog/svlogd replacement with behaviour that is more typical of
