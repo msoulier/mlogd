@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.5.11
+Version: 1.5.12
 Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -30,6 +30,12 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Thu Jan 28 2021 Auto build <do-not-reply@mitel.com>
+- [1.5.12-01el7]
+- 91bc47a Fixing if condition parsing when targetplatform is not supplied.
+- b2c40e5 Ooops
+- 18683e9 Adding a conditional BuildArch to specfile. [MBG-5149]
+
 * Thu Aug 20 2020 Auto build <do-not-reply@mitel.com>
 - [1.5.11-01el7]
 - 3a95b59 Migrate .whitesource configuration file to inheritance mode
