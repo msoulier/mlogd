@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.5.12
+Version: 1.5.13
 Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -31,6 +31,11 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Thu Feb 11 2021 Auto build <do-not-reply@mitel.com>
+- [1.5.13-01el7]
+- 5daa302 Changing arch detection in specfiles.
+- ce14868 Changing arch detection in specfiles.
+
 * Thu Jan 28 2021 Auto build <do-not-reply@mitel.com>
 - [1.5.12-01el7]
 - 91bc47a Fixing if condition parsing when targetplatform is not supplied.
