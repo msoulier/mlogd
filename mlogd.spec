@@ -13,11 +13,11 @@ AutoReqProv: no
 %define debug_package %{nil}
 
 %ifarch x86_64
-BuildArch x86_64
+ExclusiveArch: x86_64
 %else
 
 %ifarch aarch64
-BuildArch aarch64
+ExclusiveArch: aarch64
 %else
 %{error:"Unsupported build architecture %{arch}"}
 %endif
