@@ -11,18 +11,19 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-root
 AutoReqProv: no
 %define __os_install_post %{nil}
 %define debug_package %{nil}
-%if %{?targetplatform:1}%{!?targetplatform:0}
-%if %{targetplatform} == "smbc"
-%{echo:"targetplatform macro: Building for SMBC"}
-BuildArch: aarch64
+
+%ifarch x86_64
+BuildArch x86_64
 %else
-%{echo:"targetplatform macro: Building for MSL"}
-BuildArch: x86_64
-%endif
+
+%ifarch aarch64
+BuildArch aarch64
 %else
-%{echo:"No targetplatform macro: Building for MSL"}
-BuildArch: x86_64
+%{error:"Unsupported build architecture %{arch}"}
 %endif
+
+%endif
+
 
 %description
 This is a multilog/svlogd replacement with behaviour that is more typical of
