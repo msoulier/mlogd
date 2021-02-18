@@ -14,10 +14,14 @@ AutoReqProv: no
 
 %ifarch x86_64
 ExclusiveArch: x86_64
+%define arch x86_64
+# temporary hack to keep mag.py happy
+BuildArch: x86_64
 %else
 
 %ifarch aarch64
 ExclusiveArch: aarch64
+%define arch aarch64
 %else
 %{error:"Unsupported build architecture %{arch}"}
 %endif
