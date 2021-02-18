@@ -250,7 +250,7 @@ rotation hook that allows compression to a .log.gz file.
 %setup -q
 
 %build
-export GOPATH=$(pwd):$HOME/work/go
+export GOPATH=$(pwd):$(pwd)/../mitel-msl-tug/src/go
 go build -o mlogd
 
 %install
