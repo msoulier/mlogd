@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.5.15
+Version: 1.5.16
 Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -35,6 +35,17 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Fri Feb 26 2021 Auto build <do-not-reply@mitel.com>
+- [1.5.16-01el7]
+- af72fc8 Copying mlib into mlogd for now.
+- 85ac15e Fixing GOPATH to pick up deps in mitel-msl-tug.
+- dfcbebf Adding arch hack to specfile to keep mag.py happy for now.
+- 5daa302 Changing arch detection in specfiles.
+- ce14868 Changing arch detection in specfiles.
+- 91bc47a Fixing if condition parsing when targetplatform is not supplied.
+- b2c40e5 Ooops
+- 18683e9 Adding a conditional BuildArch to specfile. [MBG-5149]
+
 * Thu Feb 18 2021 Auto build <do-not-reply@mitel.com>
 - [1.5.15-01el7]
 - af72fc8 Copying mlib into mlogd for now.
