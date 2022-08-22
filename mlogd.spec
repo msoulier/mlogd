@@ -270,8 +270,7 @@ rotation hook that allows compression to a .log.gz file.
 %setup -q
 
 %build
-export GOPATH=$(pwd)
-go build -o mlogd
+go build
 
 %install
 rm -rf $RPM_BUILD_ROOT
