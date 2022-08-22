@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.6.0
+Version: 1.6.1
 Release: 01el7
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -35,6 +35,12 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Mon Aug 22 2022 Auto build <do-not-reply@mitel.com>
+- [1.6.1-01el7]
+- d526a4d Fixing build instructions in specfile.
+- 2041ff4 Turning mlogd into a go module
+- aa2f988 rolling ahead after stream split
+
 * Fri Feb 26 2021 Auto build <do-not-reply@mitel.com>
 - [1.5.16-01el7]
 - af72fc8 Copying mlib into mlogd for now.
