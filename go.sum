@@ -1,0 +1,4 @@
+github.com/msoulier/mlib v0.0.0-20210128161023-ea1b799f73ec h1:HqgXGYtq80CcaPzPmLPyOT9XjbqMTRMfa5Va0I175L4=
+github.com/msoulier/mlib v0.0.0-20210128161023-ea1b799f73ec/go.mod h1:Kndc61pTz+y80nob3WXJaNEhYCSTHFcmPle3ir8Je74=
+github.com/op/go-logging v0.0.0-20160315200505-970db520ece7 h1:lDH9UUVJtmYCjyT0CI4q8xvlXPxeZ0gYCVvWbmPlp88=
+github.com/op/go-logging v0.0.0-20160315200505-970db520ece7/go.mod h1:HzydrMdWErDVzsI23lYNej1Htcns9BCg93Dk0bBINWk=
