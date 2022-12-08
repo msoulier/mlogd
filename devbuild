@@ -1,0 +1,108 @@
+#!/bin/sh
+# ./devbuild:
+# vim: ts=4 sw=4 et ai:
+# Build an rpm from the source in this directory
+
+SIGHUP=1
+SIGINT=2
+SIGTERM=15
+
+msl_tools=${MSL_TOOLS:-$HOME/work/msl_tools}
+export PATH="$PATH:$msl_tools"
+export PERL5LIB="$msl_tools/SDK/perl5"
+
+cwd=$(pwd)
+if [ "$PATCHLEVEL" == "" ]; then
+    userid=$(whoami)
+else
+    userid=$PATCHLEVEL
+fi
+
+# Build in a temporary directory.
+topdir=$cwd/.rpmbuild
+
+cleanup() {
+    if [ -d $topdir ]; then
+        echo "Cleaning up $topdir"
+        rm -rf $topdir
+    fi
+}
+
+die() {
+    msg=$1
+    echo "ERROR: $msg" 1>&2
+    exit 1
+}
+
+rpmbuild=$(which rpmbuild)
+if [ "x$rpmbuild" = "x" ]; then
+    die "rpmbuild command not found"
+fi
+
+trap "cleanup; exit" $SIGHUP $SIGINT $SIGTERM
+
+cleanup
+
+# Should be only one specfile in the current directory.
+specfile=$(ls *.spec)
+if [ "x$specfile" = "x" ]; then
+    die "No specfile found in current directory"
+fi
+
+if [ $(echo "$specfile" | wc -l) -gt 1 ]; then
+    die "Should be only one specfile in the current directory."
+fi
+pkg=$(echo $specfile | sed 's/\.spec$//')
+
+version=$(grep ^Version $specfile | head -1 | awk -F: '{print $2}' | cut -b2-)
+# If version is a macro we need to find its definition.
+if echo $version | grep -q '%'
+then
+    version=$(grep '^%define version' $specfile | awk '{print $3}')
+fi
+
+if [ "x$version" = "x" ]; then
+    echo "Parse error: Can't find version in specfile." 1>&2
+    exit 1
+fi
+
+echo "topdir=$topdir specfile=$specfile version=$version userid=$userid"
+
+CREATED_TOP=0
+if [ ! -d $topdir ]; then
+    echo "Creating temporary build directory $topdir"
+    mkdir -p $topdir/SOURCES
+    CREATED_TOP=1
+fi
+
+echo "Copying source files"
+mkdir $topdir/SOURCES/$pkg-$version
+cp -R * $topdir/SOURCES/$pkg-$version
+
+echo "Creating tarball"
+tar -czpf $topdir/SOURCES/$pkg-$version.tar.gz -C $topdir/SOURCES $pkg-$version
+
+# Set TUG_PROJ environment variable if not already set.
+if [ "x$TUG_PROJ" = "x" ]; then
+    echo "TUG_PROJ environment variable not set. Setting"
+    tug_proj="$cwd/../tug_proj"
+    if [ -d $tug_proj ]; then
+        echo "Set to $tug_proj"
+        export TUG_PROJ=$tug_proj
+    else
+        die "Not sure where to set TUG_PROJ to"
+    fi
+fi
+
+rpmbuild -bb --define "userid ${userid}" --define "_topdir $topdir" $specfile || die "rpmbuild failed"
+
+cp -fv $topdir/RPMS/*/$pkg-$version*rpm .
+
+if [ $CREATED_TOP -eq 1 ]; then
+    echo Removing temporary build directory $topdir
+    rm -r $topdir
+else
+    echo Build directory $topdir existed already - not removing it
+fi
+
+exit 0
