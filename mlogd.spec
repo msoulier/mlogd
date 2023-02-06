@@ -6,7 +6,6 @@ Summary: An svlogd replacement with more standard unix logging behaviour.
 License: MIT
 Group: System
 Source0: %{name}-%{version}.tar.gz
-BuildRequires: golang
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 AutoReqProv: no
 %define __os_install_post %{nil}
