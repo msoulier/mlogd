@@ -275,6 +275,7 @@ rotation hook that allows compression to a .log.gz file.
 %setup -q
 
 %build
+export PATH=$PATH:/usr/local/go/bin
 go build
 
 %install
