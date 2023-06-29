@@ -1,6 +1,6 @@
 Name: mlogd
-Version: 1.7.2
-Release: 01el7
+Version: 1.8.1
+Release: 01el8
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
 License: MIT
@@ -34,11 +34,17 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
-* Tue Feb 7 2023 Auto build <do-not-reply@mitel.com>
-- [1.7.2-01el7]
-- 66c17ed Updating path for build
-- b64b69f Removing BuildRequires from specfile.
-- e44d6ab Rolling version for 11.5SP
+* Wed Dec 14 2022 Auto build <do-not-reply@mitel.com>
+- [1.8.1-01el8]
+- a7d55b1 Rolling minor version to make room for a possible SP stream
+
+* Sat Dec 10 2022 Auto build <do-not-reply@mitel.com>
+- [1.7.1-01el8]
+- 
+
+* Thu Dec 8 2022 Michael Soulier <michael.soulier@mitel.com>
+- [1.7.0-01el8]
+- Rolling ahead for Rocky 8.
 
 * Mon Aug 22 2022 Auto build <do-not-reply@mitel.com>
 - [1.6.1-01el7]
