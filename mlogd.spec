@@ -1,5 +1,5 @@
 Name: mlogd
-Version: 1.10.1
+Version: 1.10.2
 Release: 01el8
 Packager: Michael P. Soulier <msoulier@digitaltorque.ca>
 Summary: An svlogd replacement with more standard unix logging behaviour.
@@ -34,6 +34,10 @@ logging on Unix, using a .log symlink to a <name>-<date>.log file, plus a post
 rotation hook that allows compression to a .log.gz file.
 
 %changelog
+* Thu Feb 15 2024 Auto build <do-not-reply@mitel.com>
+- [1.10.2-01el8]
+- 209ad11 RS-29369 Local .whitesource file should not use PS prefix
+
 * Mon Jan 8 2024 Auto build <do-not-reply@mitel.com>
 - [1.10.1-01el8]
 - c9dfbac MBG 12.0 prep
