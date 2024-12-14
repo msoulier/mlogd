@@ -51,6 +51,7 @@ var (
     udpaddr = ""
     udp_logging = false
     udp_sock *net.UDPConn = nil
+    rotate_at_start = false
 )
 
 func init() {
@@ -58,6 +59,7 @@ func init() {
         defaultMaxSize = 5*1024*1024
         defaultMaxAge = 3600*24
     )
+    flag.BoolVar(&rotate_at_start, "rotate", false, "Rotate logfiles immediately upon startup")
     flag.BoolVar(&timestamps, "timestamps", false, "Prefix all output lines with timestamps")
     flag.Int64Var(&maxsize, "maxsize", defaultMaxSize, "Maximum size of logfile in bytes before rotation")
     flag.Int64Var(&maxage, "maxage", defaultMaxAge, "Maximum age of logfile in seconds before rotation (0 to disable age rotation)")
@@ -126,6 +128,9 @@ func init() {
         } else {
             udp_sock = conn
         }
+    }
+    if (rotate_at_start) {
+        rotation_required = true
     }
 }
 
