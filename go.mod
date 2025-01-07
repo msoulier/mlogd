@@ -1,4 +1,4 @@
-module mitel.com/mlogd
+module github.com/msoulier/mlogd
 
 go 1.17
 
